@@ -1,0 +1,141 @@
+<html>
+    <head>
+        <title>Stages L3</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!---*** Start: JQuery 3.3.1 version. ***--->
+<script language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<!---*** End: JQuery 3.3.1 version. ***--->
+<!---*** Start: Bootstrap 3.3.7 version files. ***--->
+<script language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!---*** End: Bootstrap 3.3.7 version files. ***--->
+    </head>
+    <script type="text/javascript">
+        function validateForm() {
+            {% if current_user.usertype == 2 and not edituser %}if (!document.forms["u_form"]["u_username"]) {
+                alert("Identifiant d'utilisateur vide!");
+                return false;
+            }{% endif %}
+            var pw1 = document.forms["u_form"]["u_password1"].value;
+            var pw2 = document.forms["u_form"]["u_password2"].value;
+            if (pw1 != pw2) {
+                alert("Les deux mots de passe sont differents!");
+                return false;
+            }
+            return true;
+        }
+        function confirmForm() {
+            var action = event.submitter.value;
+            if (action.startsWith("del-")) {
+                return confirm("Effacer l'utilisateur?");
+            }
+            return true;
+        }
+    </script>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container">
+    {% if devsite %}<div class="row">
+	<div class="alert alert-danger">ATTENTION: ce site est la version en developpement du site Stages L3, les informations de ce site ne correspondent
+        pas a la realite.</div>
+    </div>{% endif %}
+    {% if msg %}{% for m in  msg %}
+        {% if m[0] == 0 %}<div class="alert alert-success">{% endif %}
+        {% if m[0] == 1 %}<div class="alert alert-info">{% endif %}
+        {% if m[0] == 2 %}<div class="alert alert-warning">{% endif %}
+        {% if m[0] == 3 %}<div class="alert alert-danger">{% endif %}
+        {{ m[1] }}</div>
+    {% endfor %}{% endif %}
+
+    {% if userlist %}<h2>Utilisateurs definis</h2>
+        <form action="/edit" id="u_form" onsubmit="return confirmForm()" enctype="multipart/form-data" method="POST">
+        {% for u in userlist %}
+        <div class="form-group">
+        {% if 1 %}<button class="btn btn-default" type="submit" name="action" value="del-{{u.id}}">X</button> -{% endif %}
+            <button class="btn btn-default" type="submit" name="action" value="edit-{{u.id}}">{{ u.username }} = {{ u.FirstName }} {{ u.LastName }}
+            [ {% if u.usertype == 2 %}ADMIN{% else %}{% if u.usertype == 1 %}Maitre de Stage{% else %}Etudiant{% endif %}, phase {{ u.Phase }}{% endif %} ]</button>
+        </div>
+        {% endfor %}
+        <hr>
+        <div class="row">
+            <div class="col-sm-12">
+                <button class="btn btn-default" type="submit" name="action" value="MainPage">Retour au menu principal</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <button class="btn btn-default" type="submit" name="action" value="UserAdd">Rajouter un utilisateur</button>
+            </div>
+        </div>
+        </form>
+    {% else %}
+    <h2>Parametres utilisateur</h2>
+
+    <form action="/edit" id="u_form" onsubmit="return validateForm()" enctype="multipart/form-data" method="POST">
+        <input type="hidden" name="u_id" value="{% if edituser %}{{ edituser.id }}{% else %}-1{% endif %}">
+         <div class="form-group">
+            <label for="u_username">Utilisateur :</label>
+            {% if edituser and edituser.id != -1 %}{{ edituser.username }}{% else %}<input class="form-control" type="text" name="u_username">{% endif %}
+        </div>
+        <div class="form-group">
+            <label for="u_firstname">Prenom :</label>
+            <input class="form-control" type="text" name="u_firstname" value="{% if edituser %}{{ edituser.FirstName }}{% endif %}">
+        </div>
+        <div class="form-group">
+            <label for="u_lastname">Nom :</label>
+            <input class="form-control" type="text" name="u_lastname" value="{% if edituser %}{{ edituser.LastName }}{% endif %}">
+        </div>
+        <div class="form-group">
+            <label for="u_email">E-mail :</label>
+            <input class="form-control" type="text" name="u_email" value="{% if edituser %}{{ edituser.Email }}{% endif %}">
+        </div>
+        <hr>
+        <div class="form-group">
+            <label for="u_password1">Nouvelle password : </label>
+            <input class="form-control" type="text" name="u_password1">
+        </div>
+        <div class="form-group">
+            <label for="u_password1">Confirmation password : </label>
+            <input class="form-control" type="text" name="u_password2">
+        </div>
+        {% if user.usertype==2 %}
+        <hr>
+        <div class="form-group">
+            <label for="u_type">Type de compte utilisateur : </label>
+            <select class="form-control" name="u_type">
+                <option value="0"{% if not edituser or (edituser and edituser.usertype == 0) %} selected{% endif %}>Etudiant</option>
+                <option value="1"{% if edituser and edituser.usertype == 1 %} selected{% endif %}>Maître de stage</option>
+                <option value="2"{% if edituser and edituser.usertype == 2 %} selected{% endif %}>Administrateur</option></select>
+        </div>
+        <div class="form-group">
+            <label for="u_phase">Phase d'avancement : </label>
+            <input class="form-control" type="text" name="u_phase" value="{% if edituser %}{{ edituser.Phase }}{% else %}1{% endif %}">
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                Etudiant-1 = recherche individuelle, Etudiant-2 = selection dans la liste dispo, Etudiant-3 = associe a un sujet, Etudiant-4 = selection gelee, debut de la partie administrative
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                MdStage-1 = possibilite de deposer des sujets+associer des etudiants, MdStage-2 = possibilite d'associer des etudiants, MdStage-3 = selection gelee
+            </div>
+        </div>
+        {% endif %}
+        <hr>
+        <div class="row">
+            <div class="col-sm-12">
+                <button class="btn btn-default" type="submit" name="action" value="UserSave">Sauvegarder</button>
+                <button class="btn btn-default" type="submit" name="action" value="UserCancel">Annuler</button>
+            </div>
+        </div>
+    </form>
+    {% endif %}
+
+    </div><!-- /.container -->
+</body>
+</html>

@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>Stages L3</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!---*** Start: JQuery 3.3.1 version. ***--->
+<script language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<!---*** End: JQuery 3.3.1 version. ***--->
+<!---*** Start: Bootstrap 3.3.7 version files. ***--->
+<script language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!---*** End: Bootstrap 3.3.7 version files. ***--->
+    </head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container">
+    {% if devsite %}<div class="row">
+	<div class="alert alert-danger">ATTENTION: ce site est la version en developpement du site Stages L3, les informations de ce site ne correspondent
+        pas a la realite.</div>
+    </div>{% endif %}
+    {% if msg %}{% for m in  msg %}
+        {% if m[0] == 0 %}<div class="alert alert-success">{% endif %}
+        {% if m[0] == 1 %}<div class="alert alert-info">{% endif %}
+        {% if m[0] == 2 %}<div class="alert alert-warning">{% endif %}
+        {% if m[0] == 3 %}<div class="alert alert-danger">{% endif %}
+        {{ m[1] }}</div>
+    {% endfor %}{% endif %}
+
+    <h2>Phase {{ user.Phase }}</h2>
+    {% if user.Phase == 1 %}
+        <p>Recherche individuelle de stages</p>
+    {% elif user.Phase == 2 %}
+        <p>Recherche individuelle ou contact a travers la liste de stages disponibles</p>
+    {% elif user.Phase == 3 %}
+        <p>Stage trouve</p>
+    {% elif user.Phase == 4 %}
+        <p>Selection gelee, debut de procedure administrative</p>
+    {% endif %}
+    <hr>
+        {% if user.stage_id %}<h2>Ton sujet de stage :</h2>
+        <h2>{{ user.stage.Title }}</h2>
+        <p><p>Maitre de stage : {{ user.stage.supervisor.FirstName }} {{ user.stage.supervisor.LastName }} &lt;{{ user.stage.supervisor.Email }}&gt;</p></p>
+    {% else %}<h2>Tu n'as pas trouve un stage!</h2>{% endif %}
+    <hr>
+    <form action="/edit" id="u_form" enctype="multipart/form-data" method="POST">
+        <button class="btn btn-default" type="submit" name="action" value="SubjList">Consulter la liste des stages</button>
+    </form>
+
+    </div><!-- /.container -->
+</body>
+</html>

@@ -1,0 +1,103 @@
+<html>
+    <head>
+        <title>Stages L3</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!---*** Start: JQuery 3.3.1 version. ***--->
+<script language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<!---*** End: JQuery 3.3.1 version. ***--->
+<!---*** Start: Bootstrap 3.3.7 version files. ***--->
+<script language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!---*** End: Bootstrap 3.3.7 version files. ***--->
+    </head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container">
+    {% if devsite %}<div class="row">
+	<div class="alert alert-danger">ATTENTION: ce site est la version en developpement du site Stages L3, les informations de ce site ne correspondent
+        pas a la realite.</div>
+    </div>{% endif %}
+    {% if msg %}{% for m in  msg %}
+        {% if m[0] == 0 %}<div class="alert alert-success">{% endif %}
+        {% if m[0] == 1 %}<div class="alert alert-info">{% endif %}
+        {% if m[0] == 2 %}<div class="alert alert-warning">{% endif %}
+        {% if m[0] == 3 %}<div class="alert alert-danger">{% endif %}
+        {{ m[1] }}</div>
+    {% endfor %}{% endif %}
+
+    {% if subject %}
+        {% if subject.id == -1 %}<h2>Nouveau sujet de stage</h2>{% else %}<h2>Sujet de stage</h2>{% endif %}
+
+        <form action="/edit" enctype="multipart/form-data" method="POST">
+            <input type="hidden" name="s_id" value="{{ subject.id }}">
+             <div class="form-group">
+                <label for="s_title">Titre :</label>
+                <input class="form-control" type="text" name="s_title" value="{{ subject.Title }}">
+            </div>
+            <div class="form-group">
+                <label for="s_pdf">Fichier PDF :</label>
+                <input class="form-control" type=file name="s_pdf" id="s_pdf">
+            </div>
+            {% if subject.PDFfile %}<div class="row">(dernier fichier envoye : {{ subject.PDFfile }})</div>{% endif %}
+            <hr>
+            <div class="row">
+                <div class="col-sm-12">
+                    <button class="btn btn-default" type="submit" name="action" value="SubjSave">Sauvegarder</button>
+                    <button class="btn btn-default" type="submit" name="action" value="SubjCancel">Annuler</button>
+                    {% if subject.id != -1 %}<button class="btn btn-default" type="submit" name="action" value="SubjErase">Effacer</button>{% endif %}
+                </div>
+            </div>
+        </form>
+    {% elif studns or studs %}
+        <form action="/edit" enctype="multipart/form-data" method="POST">
+            <input type="hidden" name="s_id" value="{{ stage.id }}">
+            <h2>{{ stage.Title }}</h2>
+            <p>Choisissez l'etudiant a associer au sujet de stage (normalement il devrait etre dans la liste de ceux qui n'ont pas encore de stage, dans le cas contraire
+            il convient de demander a l'etudiant pourquoi il est deja associe a un stage....)</p>
+            {% if studns %}
+                <h2>Etudiants n'ayant pas encore un stage</h2>
+                {% for st in studns %}
+                    <button class="btn btn-default" type="submit" name="action" value="SubjAttach-{{ st.id }}">{{ st.FirstName }} {{ st.LastName }}</button>
+                {% endfor %}
+            {% endif %}
+            {% if studs %}
+                <h2>Etudiants ayant deja un stage</h2>
+                {% for st in studs %}
+                    <button class="btn btn-default" type="submit" name="action" value="SubjAttach-{{ st.id }}">{{ st.FirstName }} {{ st.LastName }}</button>
+                {% endfor %}
+            {% endif %}
+        </form>
+    {% else %}
+        <h2>Sujets de stage</h2>
+        <hr>
+        <p>Rappel: il faut contacter le maitre de stage pour choisir le sujet: seulement lui peut indiquer que vous participerez a son stage.</p>
+        {% for sj in stages %}
+            <hr>
+            <h3>{{ sj.Title }}</h3>
+            <p>Description detailee : <a href="/static/{{ sj.PDFfile }}">{{ sj.PDFfile }}</a></p>
+            <p>Maitre de stage : {{ sj.supervisor.FirstName }} {{ sj.supervisor.LastName }} &lt;{{ sj.supervisor.Email }}&gt;</p>
+            {% if sj.students %}
+                <p>Etudiants :
+                {% for st in sj.students %}
+                    {% if st.id == user.id %}<b>{% endif %}{{ st.FirstName }} {{ st.LastName }}{% if st.id == user.id %}</b>{% endif %}{{ ", " if not loop.last else "" }}
+                {% endfor %}</p>
+            {% endif %}
+        {% else %}
+            Aucun sujet de stage n'a pas encore ete depose.
+        {% endfor %}
+        <hr>
+        <form action="/edit" method="POST">
+        <div class="row">
+            <div class="col-sm-12">
+                <button class="btn btn-default" type="submit" name="action" value="MainPage">Retour a la page principale</button>
+            </div>
+        </div>
+        </form>
+    {% endif %}
+    </div><!-- /.container -->
+</body>
+</html>

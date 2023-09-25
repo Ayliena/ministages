@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+        <title>Stages L3</title>
+    </head>
+
+    <body>
+        <nav class="navbar navbar-inverse">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Stages L3: connexion</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+        {% if devsite %}<div class="row">
+    	<div class="alert alert-danger">ATTENTION: ce site est la version en developpement du site Stages L3, les informations de ce site ne correspondent
+            pas a la realite.</div>
+        </div>{% endif %}
+        {% if msg %}{% for m in  msg %}
+            {% if m[0] == 0 %}<div class="alert alert-success">{% endif %}
+            {% if m[0] == 1 %}<div class="alert alert-info">{% endif %}
+            {% if m[0] == 2 %}<div class="alert alert-warning">{% endif %}
+            {% if m[0] == 3 %}<div class="alert alert-danger">{% endif %}
+            {{ m[1] }}</div>
+        {% endfor %}{% endif %}
+
+        <form action="/create" id="u_form" enctype="multipart/form-data" method="POST">
+            <div class="form-group">
+                <label for="u_username">Utilisateur :</label>
+                <input class="form-control" type="text" name="u_username" value="{% if newuser %}{{ newuser.username }}{% endif %}">
+            </div>
+            <div class="form-group">
+                <label for="u_firstname">Prenom :</label>
+                <input class="form-control" type="text" name="u_firstname" value="{% if newuser %}{{ newuser.FirstName }}{% endif %}">
+            </div>
+            <div class="form-group">
+                <label for="u_lastname">Nom :</label>
+                <input class="form-control" type="text" name="u_lastname" value="{% if newuser %}{{ newuser.LastName }}{% endif %}">
+            </div>
+            <div class="form-group">
+                <label for="u_email">E-mail :</label>
+                <input class="form-control" type="text" name="u_email" value="{% if newuser %}{{ newuser.Email }}{% endif %}">
+            </div>
+            <hr>
+            <div class="form-group">
+                <label for="u_password1">Nouvelle password : </label>
+                <input class="form-control" type="text" name="u_password1">
+            </div>
+            <div class="form-group">
+                <label for="u_password1">Confirmation password : </label>
+                <input class="form-control" type="text" name="u_password2">
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-sm-12">
+                    <button class="btn btn-default" type="submit" name="action" value="UserSave">Creer le compte</button>
+                    <button class="btn btn-default" type="submit" name="action" value="UserCancel">Annuler</button>
+                </div>
+            </div>
+        </form>
+        </div>
+    </body>
+</html>
