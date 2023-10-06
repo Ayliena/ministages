@@ -71,7 +71,7 @@ def editpage():
 
             else:
                 if pw1 != pw2:
-                    messages.append([ 3, "Les deux mot de passe ne coincident pas"])
+                    messages.append([ 3, "Les deux mot de passe ne coïncident pas"])
 
             # generate the object, in case we have to regen the page
             newuser = User(username=un, usertype=utype, password_hash=generate_password_hash(pw1), FirstName=fn, LastName=ln.upper(), Email=em, stage_id=None)
@@ -84,7 +84,7 @@ def editpage():
             # generate new user
             db.session.add(newuser)
 
-            session["pendingmessages"] = [ [0, "Utilisateur {} cree avec mot de passe = {}".format(un, pw1) ] ]
+            session["pendingmessages"] = [ [0, "Utilisateur {} crée avec mot de passe = {}".format(un, pw1) ] ]
 
         else:
             # check the data (except username which is already defined and password, checked later)
@@ -134,9 +134,9 @@ def editpage():
         if deluser and deluser.usertype != 2:
             db.session.delete(deluser)
             db.session.commit()
-            session["pendingmessages"] = [ [0, "Utilisateur efface"] ]
+            session["pendingmessages"] = [ [0, "Utilisateur effacé"] ]
         else:
-            session["pendingmessages"] = [ [3, "Cet utilisateur ne peut pas etre efface"] ]
+            session["pendingmessages"] = [ [3, "Cet utilisateur ne peut pas être effacé"] ]
 
         return redirect(url_for('mainpage'))
 
@@ -390,7 +390,7 @@ def editpage():
 
     if cmd == "DataExport" and (current_user.usertype == ACC_ADMIN or current_user.usertype == ACC_SCOL):
         # generate a CSV file with the current status
-        csv="Etudiant,,Stage,Maitre de Stage,,Fiche Logistique,Validee Scol.,Validee Resp.\n"
+        csv="Etudiant,,Stage,Maître de Stage,,Fiche Logistique,Validee Scol.,Validee Resp.\n"
 
         # first part is table by student
         students = User.query.filter_by(usertype=ACC_STUDENT).all()

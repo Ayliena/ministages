@@ -18,8 +18,8 @@
 
     <div class="container">
     {% if devsite %}<div class="row">
-	<div class="alert alert-danger">ATTENTION: ce site est la version en developpement du site Stages L3, les informations de ce site ne correspondent
-        pas a la realite.</div>
+	<div class="alert alert-danger">ATTENTION: ce site est la version en développement du site Stages L3, les informations de ce site ne correspondent
+        pas à la réalité.</div>
     </div>{% endif %}
     {% if msg %}{% for m in  msg %}
         {% if m[0] == 0 %}<div class="alert alert-success">{% endif %}
@@ -32,7 +32,7 @@
     <form action="/edit" enctype="multipart/form-data" method="POST">
         <div class="row">
             <div class="col-sm-12">
-                <button class="btn btn-default" type="submit" name="action" value="UserManage">Gerer les utilisateurs</button>
+                <button class="btn btn-default" type="submit" name="action" value="UserManage">Gérer les utilisateurs</button>
             </div>
         </div>
         <div class="row">

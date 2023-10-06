@@ -27,8 +27,8 @@
 
     <div class="container">
     {% if devsite %}<div class="row">
-	<div class="alert alert-danger">ATTENTION: ce site est la version en developpement du site Stages L3, les informations de ce site ne correspondent
-        pas a la realite.</div>
+	<div class="alert alert-danger">ATTENTION: ce site est la version en développement du site Stages L3, les informations de ce site ne correspondent
+        pas à la réalité.</div>
     </div>{% endif %}
     {% if msg %}{% for m in  msg %}
         {% if m[0] == 0 %}<div class="alert alert-success">{% endif %}
@@ -38,14 +38,7 @@
         {{ m[1] }}</div>
     {% endfor %}{% endif %}
 
-    <h2>Phase {{ user.Phase }}</h2>
-    {% if user.Phase == 1 %}
-        <p>Depot de sujets et association sujet/etudiant</p>
-    {% elif user.Phase == 2 %}
-        <p>Site gele, aucune modification possible</p>
-    {% endif %}
-    <hr>
-    <h2>Sujets deposes</h2>
+    <h2>Sujets déposés</h2>
     {% if subs %}
         {% for sj in subs %}
         <form action="/edit" onsubmit="return confirmForm()" method="POST">
@@ -59,25 +52,25 @@
         <p>{% for st in sj.students %}
                 {{ st.FirstName }} {{ st.LastName }} {% if st.PDFfiche %}(CONFIRME){% else %}<button class="btn btn-default" name="action" value="SubjDetach-{{ st.id }}">X</button>{% endif %}{{ ", " if not loop.last else "" }}
             {% else %}
-                Aucun etudiant est associe a ce stage.
+                Aucun étudiant est associé à ce stage.
             {% endfor %}</p>
         <div class="row">
             <div class="col-sm-6">
-                <button class="btn btn-default" name="action" value="SubjAttach">Associer un etudiant</button>
-                {% if sj.NStudents >= 2 %} - ATTENTION: il y a deja assez d'etudiants associes a ce sujet! {% endif %}
+                <button class="btn btn-default" name="action" value="SubjAttach">Associer un étudiant</button>
+                {% if sj.NStudents >= 2 %} - ATTENTION: il y a déjà assez d'étudiants associes à ce sujet! {% endif %}
             </div>
         </div>
         {% if sj.Obsolete %}<div class="row">
             <div class="col-sm-12">
-                ATTENTION: ce sujet est marque obsolet (fichier PDF mis a jour il y a plus de 10 mois) et il n'est donc pas visible
-                pour les etudiants.  Mettre a jour le fichier PDF elimine cette indication.
+                ATTENTION: ce sujet est marqué obsolète (fichier PDF mis à jour il y a plus de 10 mois) et il n'est donc pas visible
+                pour les étudiants.  Mettre á jour le fichier PDF élimine cette indication.
             </div>
         </div>{% endif %}
         </form>
         <hr>
         {% endfor %}
     {% else %}
-        Aucun sujet de stage depose.
+        Aucun sujet de stage déposé.
     {% endif %}
     <form action="/edit" id="u_form" enctype="multipart/form-data" method="POST">
         <button class="btn btn-default" type="submit" name="action" value="SubjAdd">Rajouter un sujet de stage</button>

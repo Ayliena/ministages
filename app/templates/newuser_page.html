@@ -26,8 +26,8 @@
 
         <div class="container">
         {% if devsite %}<div class="row">
-    	<div class="alert alert-danger">ATTENTION: ce site est la version en developpement du site Stages L3, les informations de ce site ne correspondent
-            pas a la realite.</div>
+    	<div class="alert alert-danger">ATTENTION: ce site est la version en développement du site Stages L3, les informations de ce site ne correspondent
+            pas à la réalité.</div>
         </div>{% endif %}
         {% if msg %}{% for m in  msg %}
             {% if m[0] == 0 %}<div class="alert alert-success">{% endif %}
@@ -43,7 +43,7 @@
                 <input class="form-control" type="text" name="u_username" value="{% if newuser %}{{ newuser.username }}{% endif %}">
             </div>
             <div class="form-group">
-                <label for="u_firstname">Prenom :</label>
+                <label for="u_firstname">Prénom :</label>
                 <input class="form-control" type="text" name="u_firstname" value="{% if newuser %}{{ newuser.FirstName }}{% endif %}">
             </div>
             <div class="form-group">
@@ -66,7 +66,7 @@
             <hr>
             <div class="row">
                 <div class="col-sm-12">
-                    <button class="btn btn-default" type="submit" name="action" value="UserSave">Creer le compte</button>
+                    <button class="btn btn-default" type="submit" name="action" value="UserSave">Créer le compte</button>
                     <button class="btn btn-default" type="submit" name="action" value="UserCancel">Annuler</button>
                 </div>
             </div>
