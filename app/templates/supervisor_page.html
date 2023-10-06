@@ -13,6 +13,15 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <!---*** End: Bootstrap 3.3.7 version files. ***--->
     </head>
+    <script type="text/javascript">
+        function confirmForm() {
+            var action = event.submitter.value;
+            if (action.startsWith("SubjDetach-")) {
+                return confirm("Dissocier l'etudiant?");
+            }
+            return true;
+        }
+    </script>
 <body>
     {% include 'navbar.html' %}
 
@@ -39,7 +48,7 @@
     <h2>Sujets deposes</h2>
     {% if subs %}
         {% for sj in subs %}
-        <form action="/edit" method="POST">
+        <form action="/edit" onsubmit="return confirmForm()" method="POST">
         <input type="hidden" name="s_id" value="{{ sj.id }}">
         <div class="row">
             <div class="col-sm-12">
@@ -48,7 +57,7 @@
         </div>
         <p>Texte du sujet: <a href="/static/{{ sj.PDFfile }}">{{ sj.PDFfile }}</a></p>
         <p>{% for st in sj.students %}
-                {{ st.FirstName }} {{ st.LastName }} <button class="btn btn-default" name="action" value="SubjDetach-{{ st.id }}">X</button>{{ ", " if not loop.last else "" }}
+                {{ st.FirstName }} {{ st.LastName }} {% if st.PDFfiche %}(CONFIRME){% else %}<button class="btn btn-default" name="action" value="SubjDetach-{{ st.id }}">X</button>{% endif %}{{ ", " if not loop.last else "" }}
             {% else %}
                 Aucun etudiant est associe a ce stage.
             {% endfor %}</p>

@@ -29,21 +29,50 @@
         {{ m[1] }}</div>
     {% endfor %}{% endif %}
 
-    <h2>Phase {{ user.Phase }}</h2>
-    {% if user.Phase == 1 %}
-        <p>Recherche individuelle de stages</p>
-    {% elif user.Phase == 2 %}
-        <p>Recherche individuelle ou contact a travers la liste de stages disponibles</p>
-    {% elif user.Phase == 3 %}
-        <p>Stage trouve</p>
-    {% elif user.Phase == 4 %}
-        <p>Selection gelee, debut de procedure administrative</p>
-    {% endif %}
     <hr>
         {% if user.stage_id %}<h2>Ton sujet de stage :</h2>
         <h2>{{ user.stage.Title }}</h2>
-        <p><p>Maitre de stage : {{ user.stage.supervisor.FirstName }} {{ user.stage.supervisor.LastName }} &lt;{{ user.stage.supervisor.Email }}&gt;</p></p>
-    {% else %}<h2>Tu n'as pas trouve un stage!</h2>{% endif %}
+        <div class="row">
+            <div class="col-sm-12">
+                Maitre de stage : {{ user.stage.supervisor.FirstName }} {{ user.stage.supervisor.LastName }} &lt;{{ user.stage.supervisor.Email }}&gt;</p></p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                {% if user.PDFfiche %}
+                    {% if user.ValidScol and user.ValidAdmin %}<p>La fiche logistique a ete validee par la scolarite et le responsable des projets tutores, tu peux desormais
+                    utiliser l'application Pstage disponible dans ERNEST pour generer la convention de stage qu'il faudra transmettre a la scolarite.</p>
+                    {% else %}<p>Fiche logistique deposee (<a href="/static/{{ user.PDFfiche }}" target="_blank">{{ user.PDFfiche }}</a>): tu dois maintenant attendre que celle-ci soit validee par la scolarite et le responsable des
+                    projets tutores.{% endif %}
+                {% else %}
+                    Tu dois completer la fiche logistique (en utilisant le site indique par la scolarite)
+                    et ensuite envoyer le PDF ici afin de valider ta participation au stage.  Une fois envoyee tu dois attendre que la fiche logistique soit validee par la scolarite et le
+                    responsable des projets tutores.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% if user.PDFfiche %}
+        <div class="row">
+            {% if user.ValidScol %}<div class="col-sm-3 bg-success">SCOLARITE: validee</div>{% else %}<div class="col-sm-3 bg-warning">SCOLARITE: pas encore validee</div>{% endif %}
+            {% if user.ValidAdmin %}<div class="col-sm-3 bg-success">RESPONSABLE: validee</div>{% else %}<div class="col-sm-3 bg-warning">RESPONSABLE: pas encore validee</div>{% endif %}
+        </div>
+        <hr>
+        {% endif %}
+        <form action="/edit" id="u_form" enctype="multipart/form-data" method="POST">
+            <div class="form-group">
+                <label for="s_pdf">PDF Fiche logistique:{% if user.PDFfiche %} (ATTENTION: renvoyer une fiche annulle la validation de la precedente!){% endif %}</label>
+                <input class="form-control" type=file name="s_pdf" id="s_pdf">
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <button class="btn btn-default" type="submit" name="action" value="StudFiche">Envoyer la fiche</button>{% if PDFfiche %}(attention, ceci va annuller la validation, s'assurer qu'il est vraiment utile de renvoyer une fiche){% endif %}
+                </div>
+            </div>
+        </form>
+        {% else %}<h2>Tu n'as pas encore de stage!</h2>
+        <p>Il faut consulter la liste de sujets de stage disponibles et contacter le maitre de stage pour qu'il t'associe au sujet.</p><p>Alternativement, si tu as trouve
+        de ton cote un sujet de stage en contactant un enseignant, il faut lui dire d'ecrire un mail au responsable des projets tutores pour qu'il puisse le
+        rajouter en tant que maitre de stage pour cette annee: ceci lui permettra de deposer le sujet et t'y associer.</p>{% endif %}
     <hr>
     <form action="/edit" id="u_form" enctype="multipart/form-data" method="POST">
         <button class="btn btn-default" type="submit" name="action" value="SubjList">Consulter la liste des stages</button>

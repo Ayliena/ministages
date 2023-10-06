@@ -29,9 +29,11 @@ class User(UserMixin, db.Model):
     LastName = db.Column(db.String(64), nullable=False)
     Email = db.Column(db.String(128))
     LastOp = db.Column(db.DateTime)
-    Phase = db.Column(db.Integer)
     stage_id = db.Column(db.Integer, db.ForeignKey('stages.id'))
 #    stage = db.relationship('Stage', foreign_keys=stage_id)
+    PDFfiche = db.Column(db.String(128))
+    ValidAdmin = db.Column(db.Boolean)
+    ValidScol = db.Column(db.Boolean)
     subjects = db.relationship('Stage', backref='supervisor', foreign_keys=[Stage.supervisor_id], lazy=True)
 
     def __repr__(self):

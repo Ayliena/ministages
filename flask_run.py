@@ -1,5 +1,6 @@
 from app import app, db
 from app.models import User, GlobalData
+from app.staticdata import ACC_ADMIN
 #from socket import gethostname
 from werkzeug.security import generate_password_hash
 import string
@@ -23,7 +24,7 @@ if __name__ == '__main__':
         password = ''.join(secrets.choice(alphabet) for i in range(8))
 
         print("--> admin is abarsella/{}".format(password))
-        newuser = User(username="abarsella", password_hash=generate_password_hash(password), usertype=2, FirstName="Alberto", LastName="BARSELLA", Email="alberto.barsella@ipcms.unistra.fr")
+        newuser = User(username="abarsella", password_hash=generate_password_hash(password), usertype=ACC_ADMIN, FirstName="Alberto", LastName="BARSELLA", Email="alberto.barsella@ipcms.unistra.fr")
         db.session.add(newuser)
         globaldata = GlobalData(Phase=0)
         db.session.add(globaldata)
@@ -33,7 +34,7 @@ if __name__ == '__main__':
         password = ''.join(secrets.choice(alphabet) for i in range(8))
         print("--> admin is abarsella/{}".format(password))
         userADM.password_hash = generate_password_hash(password)
-        userADM.usertype = 2
+        userADM.usertype = ACC_ADMIN
 
     db.session.commit()
 

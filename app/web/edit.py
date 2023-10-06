@@ -1,8 +1,8 @@
 from app import app, db, devel_site
-from app.staticdata import ACC_STUDENT, ACC_SUPERV, ACC_ADMIN
+from app.staticdata import ACC_STUDENT, ACC_SUPERV, ACC_SCOL, ACC_ADMIN
 from app.models import User, Stage, GlobalData
 from app.helpers import checkuser
-from flask import render_template, redirect, request, url_for, session
+from flask import render_template, redirect, request, url_for, session, Response
 from flask_login import login_required, current_user
 from sqlalchemy import and_
 from datetime import datetime
@@ -27,6 +27,21 @@ def editpage():
     else:
        return redirect(url_for('main'))
 
+    if cmd == "UserManage" and current_user.usertype == ACC_ADMIN:
+        # switch the view to userlist mode
+        session["otherMode"] = "usermanage"
+        return redirect(url_for('mainpage'))
+
+    if cmd == "StageManage" and (current_user.usertype == ACC_ADMIN or current_user.usertype == ACC_SCOL):
+        # switch the view to stage manage mode
+        session["otherMode"] = "stagemanage"
+        return redirect(url_for('mainpage'))
+
+    if cmd == "MainPage":
+        # whatever we are or were, return to the default view
+        session.pop("otherMode")
+        return redirect(url_for('mainpage'))
+
     # create new user, step 1 empty page
     if cmd == "UserAdd" and current_user.usertype == ACC_ADMIN:
         # generate empty page
@@ -41,14 +56,13 @@ def editpage():
         pw1 = request.form["u_password1"]
         pw2 = request.form["u_password2"]
         utype = int(request.form["u_type"])
-        uphase = int(request.form["u_phase"])
 
         if uid == -1:
             # new user
             un = request.form["u_username"]
 
             # note that passwords are not checked here
-            messages = checkuser(un, utype, fn, ln, em, 'a', 'a', uphase)
+            messages = checkuser(un, utype, fn, ln, em, 'a', 'a')
 
             # handle the password stuff
             if pw1 == "" or pw1 == "random":
@@ -60,7 +74,7 @@ def editpage():
                     messages.append([ 3, "Les deux mot de passe ne coincident pas"])
 
             # generate the object, in case we have to regen the page
-            newuser = User(username=un, usertype=utype, password_hash=generate_password_hash(pw1), FirstName=fn, LastName=ln.upper(), Email=em, stage_id=None, Phase=uphase)
+            newuser = User(username=un, usertype=utype, password_hash=generate_password_hash(pw1), FirstName=fn, LastName=ln.upper(), Email=em, stage_id=None)
 
             if messages:
                 # errors, data will not be saved and we regen the page
@@ -74,7 +88,7 @@ def editpage():
 
         else:
             # check the data (except username which is already defined and password, checked later)
-            messages = checkuser('xxx', utype, fn, ln, em, 'a', 'a', uphase)
+            messages = checkuser('xxx', utype, fn, ln, em, 'a', 'a')
 
             # update user
             theUser = User.query.filter_by(id=uid).first();
@@ -94,23 +108,12 @@ def editpage():
             if pw1:
                 theUser.password_hash=generate_password_hash(pw1)
             theUser.usertype = utype
-            theUser.Phase = uphase
 
         db.session.commit()
         return redirect(url_for('mainpage'))
 
     if cmd == "UserCancel" and current_user.usertype == ACC_ADMIN:
         # just return to the previous page
-        return redirect(url_for('mainpage'))
-
-    if cmd == "UserManage" and current_user.usertype == ACC_ADMIN:
-        # switch the view to userlist mode
-        session["otherMode"] = "userlist"
-        return redirect(url_for('mainpage'))
-
-    if cmd == "MainPage":
-        # whatever we are or were, return to the default view
-        session.pop("otherMode")
         return redirect(url_for('mainpage'))
 
     # handle the edit-XXX commands
@@ -177,11 +180,15 @@ def editpage():
                     messages.append([3, "Le fichier n'est pas un PDF"])
 
         if sid == -1:
-            sujet = Stage(supervisor_id=current_user.id, NStudents=0, Title=ti)
+            sujet = Stage(supervisor_id=current_user.id, NStudents=0, Title=ti, Frozen=False)
         else:
             sujet = Stage.query.filter_by(id=sid).first()
             if not sujet:
                 return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid sujet id")
+
+            if sujet.Frozen:
+                return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="cannot modify frozen sujet")
+
             sujet.Title = ti
 
         # generate/edit if no errors
@@ -292,7 +299,7 @@ def editpage():
         return redirect(url_for('mainpage'))
 
     if cmd.startswith('SubjDetach-') and current_user.usertype == ACC_SUPERV:
-        # attach a student to a subject
+        # detach a student from a subject
         sid = int(request.form["s_id"])
         sujet = Stage.query.filter_by(id=sid).first()
         if not sujet:
@@ -304,6 +311,10 @@ def editpage():
         if not student or student.usertype != ACC_STUDENT:
             return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid student id")
 
+        # detach is only possible if the fiche logistique was NOT submitted
+        if student.PDFfiche:
+            return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="fiche logistique uploaded, can't detach")
+
         # if the student is not attached, ignore, otherwise detach
         if student.stage_id == sujet.id:
             student.stage_id = None
@@ -311,5 +322,113 @@ def editpage():
             db.session.commit()
 
         return redirect(url_for('mainpage'))
+
+    if cmd == "StudFiche" and current_user.usertype == ACC_STUDENT:
+        # save the PDF file
+        messages = []
+
+        # note that for a new subject a PDF MUST be provided
+        if not 's_pdf' in request.files or not request.files['s_pdf']:
+            messages.append([3, "Fichier PDF non fourni"])
+
+        else:
+            ext = request.files['s_pdf'].filename[-4:]
+            if not ext.upper() == ".PDF":
+                messages.append([3, "Le fichier n'est pas un PDF"])
+
+        # if no errors, save the file
+        if not messages:
+            # if a file is provided, save it
+            # in case we already had a file, erase the old one first
+            if current_user.PDFfiche:
+                if os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], current_user.PDFfiche)):
+                    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], current_user.PDFfiche))
+
+            # now save the new one
+            pdf_file = request.files['s_pdf']
+            if pdf_file:
+                filename = secure_filename(pdf_file.filename)
+                filename = "{}-{}".format(current_user.id, filename)
+                pdf_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                current_user.PDFfiche = filename
+
+                # note that this resets any validation
+                current_user.ValidAdmin = False
+                current_user.ValidScol = False
+
+            current_user.LastOp = datetime.now()
+            db.session.commit()
+        else:
+            # errors are present, regen the page
+            return render_template("student_page.html", devsite=devel_site, user=current_user, msg=messages, gdata=gendata)
+
+        return redirect(url_for('mainpage'))
+
+    if cmd.startswith("ScolValid-") and current_user.usertype == ACC_SCOL:
+        uid = int(cmd[10:])
+        # find the user
+        student = User.query.filter_by(id=uid).first()
+
+        if not student or student.usertype != ACC_STUDENT or not student.PDFfiche:
+            return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="validation: user state error")
+
+        student.ValidScol = True
+        db.session.commit()
+        return redirect(url_for('mainpage'))
+
+    if cmd.startswith("AdminValid-") and current_user.usertype == ACC_ADMIN:
+        uid = int(cmd[11:])
+        # find the user
+        student = User.query.filter_by(id=uid).first()
+
+        if not student or student.usertype != ACC_STUDENT or not student.PDFfiche:
+            return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="validation: user state error")
+
+        student.ValidAdmin = True
+        db.session.commit()
+        return redirect(url_for('mainpage'))
+
+    if cmd == "DataExport" and (current_user.usertype == ACC_ADMIN or current_user.usertype == ACC_SCOL):
+        # generate a CSV file with the current status
+        csv="Etudiant,,Stage,Maitre de Stage,,Fiche Logistique,Validee Scol.,Validee Resp.\n"
+
+        # first part is table by student
+        students = User.query.filter_by(usertype=ACC_STUDENT).all()
+
+        for st in students:
+            csv += ('"'+st.LastName+' '+st.FirstName+'",'+st.Email+',')
+            if st.stage:
+                ti = st.stage.Title
+                ti.replace('"', '\"')
+                csv += ('"'+ti+'","'+st.stage.supervisor.LastName+" "+st.stage.supervisor.FirstName+'",'+st.stage.supervisor.Email)
+
+                if st.PDFfiche:
+                    csv += ",OUI" + (",OUI" if st.ValidScol else ",non") + (",OUI" if st.ValidAdmin else ",non")
+                else:
+                    csv += ",non"
+
+            csv += "\n"
+
+        csv += "\n\nMaitre de Stage,,Stage,Etudiants\n"
+
+        stages = Stage.query.filter_by(Obsolete=False).all()
+
+        for sj in stages:
+            ti = sj.Title
+            ti.replace('"', '\"')
+            csv += ('"'+sj.supervisor.LastName+" "+sj.supervisor.FirstName+'",'+sj.supervisor.Email+',"'+ti+'"')
+
+            for st in sj.students:
+                csv += ',"'+st.LastName+" "+st.FirstName+'"'
+            csv += "\n"
+
+        return Response(
+            csv,
+            mimetype="text/csv",
+            headers={"Content-disposition":
+                     "attachment; filename=stagesL3.csv"})
+
+    # default is return to index
+    #return redirect(url_for('fapage'))
 
     return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid command")

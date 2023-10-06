@@ -1,5 +1,5 @@
 from app import app, db, devel_site
-from app.staticdata import ACC_STUDENT, ACC_SUPERV, ACC_ADMIN
+from app.staticdata import ACC_STUDENT, ACC_SUPERV, ACC_SCOL, ACC_ADMIN
 from app.models import User, Stage, GlobalData
 # from app.helpers import cat_delete, isFATemp, isRefuge, getViewUser, accessPrivileges
 from flask import render_template, redirect, request, url_for, session
@@ -40,9 +40,23 @@ def mainpage():
         # subjects = Stage.query.filter_by(owner_id=current_user.id)
         return render_template("supervisor_page.html", devsite=devel_site, user=current_user, gdata=gendata, subs=subjects)
 
+    if current_user.usertype == ACC_SCOL:
+        # use the session variable to determine the type of page
+        if mode == "stagemanage":
+            # generate the stagelist for stage management
+            stages = Stage.query.all()
+            return render_template("stage_page.html", devsite=devel_site, user=current_user, stagedit=stages, gdata=gendata, msg=messages)
+
+        return render_template("scol_page.html", devsite=devel_site, user=current_user, gdata=gendata, msg=messages)
+
     if current_user.usertype == ACC_ADMIN:
-        # use the session variable to determine the type of page (main / userlist)
-        if mode == "userlist":
+        # use the session variable to determine the type of page
+        if mode == "stagemanage":
+            # generate the stagelist for stage management
+            stages = Stage.query.all()
+            return render_template("stage_page.html", devsite=devel_site, user=current_user, stagedit=stages, gdata=gendata, msg=messages)
+
+        if mode == "usermanage":
             # generate the userlist for user management
             users = User.query.all()
             return render_template("user_page.html", devsite=devel_site, user=current_user, userlist=users, gdata=gendata, msg=messages)

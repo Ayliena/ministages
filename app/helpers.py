@@ -9,7 +9,7 @@ def checkemail(addr):
     return re.fullmatch(regex, addr)
 
 
-def checkuser(username, usertype, firstname, lastname, email, pw1, pw2, phase):
+def checkuser(username, usertype, firstname, lastname, email, pw1, pw2):
     messages = []
 
     if not username:

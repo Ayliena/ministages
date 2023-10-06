@@ -68,7 +68,7 @@ def createaccount():
             # perform an initial check
             messages = checkuser(Username, 0, FirstName, LastName, Email, pw1, pw2, 0)
             # note that we create the object to refill the form if needed
-            newuser = User(username=Username, password_hash=generate_password_hash(pw1), usertype=0, FirstName=FirstName, LastName=LastName, Email=Email)
+            newuser = User(username=Username, password_hash=generate_password_hash(pw1), usertype=0, FirstName=FirstName, LastName=LastName.upper(), Email=Email, Phase=1)
 
             if not messages:
                 # check if the user already exists
@@ -81,9 +81,10 @@ def createaccount():
                     db.session.add(newuser)
                     db.session.commit()
 
-                return render_template("login_page.html", devsite=devel_site, error=False, newuser=True)
+            if messages:
+                return render_template("newuser_page.html", devsite=devel_site, msg=messages, newuser=newuser)
 
-            return render_template("newuser_page.html", devsite=devel_site, msg=messages, newuser=newuser)
+            return render_template("login_page.html", devsite=devel_site, error=False, newuser=True)
 
         else:
             # any other cmd: ignore and return to login

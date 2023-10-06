@@ -13,6 +13,15 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <!---*** End: Bootstrap 3.3.7 version files. ***--->
     </head>
+    <script type="text/javascript">
+        function confirmForm() {
+            var action = event.submitter.value;
+            if (action.startsWith("SubjErase")) {
+                return confirm("Effacer le sujet?");
+            }
+            return true;
+        }
+    </script>
 <body>
     {% include 'navbar.html' %}
 
@@ -32,7 +41,7 @@
     {% if subject %}
         {% if subject.id == -1 %}<h2>Nouveau sujet de stage</h2>{% else %}<h2>Sujet de stage</h2>{% endif %}
 
-        <form action="/edit" enctype="multipart/form-data" method="POST">
+        <form action="/edit" onsubmit="return confirmForm()" enctype="multipart/form-data" method="POST">
             <input type="hidden" name="s_id" value="{{ subject.id }}">
              <div class="form-group">
                 <label for="s_title">Titre :</label>
@@ -46,9 +55,10 @@
             <hr>
             <div class="row">
                 <div class="col-sm-12">
+                    {% if subject.NStudents %}Modification du sujet impossible tant que des etudiants y sont associes{% else %}
                     <button class="btn btn-default" type="submit" name="action" value="SubjSave">Sauvegarder</button>
+                    {% if subject.id != -1 %}<button class="btn btn-default" type="submit" name="action" value="SubjErase">Effacer</button>{% endif %}{% endif %}
                     <button class="btn btn-default" type="submit" name="action" value="SubjCancel">Annuler</button>
-                    {% if subject.id != -1 %}<button class="btn btn-default" type="submit" name="action" value="SubjErase">Effacer</button>{% endif %}
                 </div>
             </div>
         </form>
@@ -66,10 +76,55 @@
             {% endif %}
             {% if studs %}
                 <h2>Etudiants ayant deja un stage</h2>
+                <h3>(Normalement, si un etudiant est deja associe a un stage, il ne devrait pas demander a etre associe a un autre....)</h3>
                 {% for st in studs %}
                     <button class="btn btn-default" type="submit" name="action" value="SubjAttach-{{ st.id }}">{{ st.FirstName }} {{ st.LastName }}</button>
                 {% endfor %}
             {% endif %}
+        </form>
+    {% elif stagedit %}
+        <h2>Sujets de stage et validation des fiches logistiques</h2>
+        <hr>
+        <p>Cette page recense l'integralite des sujets de stage deposes avec les etudiants associes.  En tant que {% if user.usertype==3 %}responsable des projets tutores
+        {% else %}scolarite{% endif %} tu peux valider la fiche logistique soumise par les etudiants.  Une fois les deux validations (scolarite + responsable) obtenues, le site indique a l'etudiant
+        comment proceder pour la convention de stage.</p>
+        <form action="/edit" method="POST">
+        {% for sj in stagedit %}
+            <hr>
+            <h3>{{ sj.Title }}</h3>
+            <div class="row">
+                <div class="col-sm-12">
+                    <p>Maitre de stage : {{ sj.supervisor.FirstName }} {{ sj.supervisor.LastName }} &lt;{{ sj.supervisor.Email }}&gt;</p>
+                </div>
+            </div>
+            {% for st in sj.students %}
+            <div class="row">
+                <div class="col-sm-6">
+                    {{ st.FirstName }} {{ st.LastName }}{% if st.PDFfiche %} (<a href="static/{{ st.PDFfiche }}" target="_blank">{{ st.PDFfiche }}</a>){% endif %}
+                </div>
+                {% if st.PDFfiche %}
+                    {% if st.ValidScol %}<div class="col-sm-3 bg-success">SCOLARITE: validee</div>
+                    {% else %}{% if user.usertype==2 %}<div class="col-sm-3"><button class="btn btn-default" type="submit" name="action" value="ScolValid-{{st.id}}">SCOLARITE: valider</button></div>
+                              {% else %}<div class="col-sm-3 bg-warning">SCOLARITE: non validee</div>{% endif %}{% endif %}
+                    {% if st.ValidAdmin %}<div class="col-sm-3 bg-success">RESPONSABLE: validee</div>
+                    {% else %}{% if user.usertype==3 %}<div class="col-sm-3"><button class="btn btn-default" type="submit" name="action" value="AdminValid-{{st.id}}">RESPONSABLE: valider</button></div>
+                              {% else %}<div class="col-sm-3 bg-warning">RESPONSABLE: non validee</div>{% endif %}{% endif %}
+                {% else %}
+                <div class="col-sm-6 bg-danger">
+                    Fiche logistique non deposee
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            Aucun sujet de stage n'a pas encore ete depose.
+        {% endfor %}
+        <hr>
+        <div class="row">
+            <div class="col-sm-12">
+                <button class="btn btn-default" type="submit" name="action" value="MainPage">Retour a la page principale</button>
+            </div>
+        </div>
         </form>
     {% else %}
         <h2>Sujets de stage</h2>
@@ -78,7 +133,7 @@
         {% for sj in stages %}
             <hr>
             <h3>{{ sj.Title }}</h3>
-            <p>Description detailee : <a href="/static/{{ sj.PDFfile }}">{{ sj.PDFfile }}</a></p>
+            <p>Description detailee : <a href="/static/{{ sj.PDFfile }}" target="_blank">{{ sj.PDFfile }}</a></p>
             <p>Maitre de stage : {{ sj.supervisor.FirstName }} {{ sj.supervisor.LastName }} &lt;{{ sj.supervisor.Email }}&gt;</p>
             {% if sj.students %}
                 <p>Etudiants :
