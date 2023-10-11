@@ -66,9 +66,9 @@ def createaccount():
             pw2 = request.form["u_password2"]
 
             # perform an initial check
-            messages = checkuser(Username, 0, FirstName, LastName, Email, pw1, pw2, 0)
+            messages = checkuser(Username, 0, FirstName, LastName, Email, pw1, pw2)
             # note that we create the object to refill the form if needed
-            newuser = User(username=Username, password_hash=generate_password_hash(pw1), usertype=0, FirstName=FirstName, LastName=LastName.upper(), Email=Email, Phase=1)
+            newuser = User(username=Username, password_hash=generate_password_hash(pw1), usertype=0, FirstName=FirstName, LastName=LastName.upper(), Email=Email)
 
             if not messages:
                 # check if the user already exists

@@ -263,8 +263,9 @@ def editpage():
             return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="stage/supervisor mismatch")
 
         # generate a table of the students, separating those who already have a stage from those who don't
+        # note that all confirmed students will not appear anywhere
         students1 = User.query.filter(and_(User.usertype==ACC_STUDENT, User.stage_id==None)).all()
-        students2 = User.query.filter(and_(User.usertype==ACC_STUDENT, User.stage_id!=None)).all()
+        students2 = User.query.filter(and_(and_(User.usertype==ACC_STUDENT, User.stage_id!=None),User.PDFfiche!=None)).all()
 
         return render_template("stage_page.html", devsite=devel_site, user=current_user, gdata=gendata, stage=sujet, studns=students1, studs=students2)
 
@@ -272,7 +273,7 @@ def editpage():
         # attach a student to a subject
         sid = int(request.form["s_id"])
         sujet = Stage.query.filter_by(id=sid).first()
-        if not sujet:
+        if not sujet or sujet.supervisor_id != current_user.id:
             return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid sujet id")
 
         # get the student
@@ -282,7 +283,8 @@ def editpage():
             return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid student id")
 
         # make sure the student is not already attached (if yes, ignore)
-        if student.stage_id != sujet.id:
+        # make sure the student is not "confirmed"
+        if student.stage_id != sujet.id and not student.PDFfiche:
             # in case we're switching stage, we need to remove the student from the count of the other stage
             if student.stage_id:
                 sujet2 = Stage.query.filter_by(id=sid).first()
