@@ -62,7 +62,7 @@
                 </div>
             </div>
         </form>
-    {% elif studns or studs %}
+    {% elif subjattach %}
         <form action="/edit" enctype="multipart/form-data" method="POST">
             <input type="hidden" name="s_id" value="{{ stage.id }}">
             <h2>{{ stage.Title }}</h2>
@@ -80,6 +80,13 @@
                     <button class="btn btn-default" type="submit" name="action" value="SubjAttach-{{ st.id }}">{{ st.FirstName }} {{ st.LastName }}</button>
                 {% endfor %}
             {% endif %}
+        </form>
+        <form action="/edit" method="POST">
+        <div class="row">
+            <div class="col-sm-12">
+                <button class="btn btn-default" type="submit" name="action" value="MainPage">Retour á la page principale</button>
+            </div>
+        </div>
         </form>
     {% elif stagedit %}
         <h2>Sujets de stage et validation des fiches logistiques</h2>

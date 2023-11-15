@@ -39,7 +39,8 @@ def editpage():
 
     if cmd == "MainPage":
         # whatever we are or were, return to the default view
-        session.pop("otherMode")
+        if "otherMode" in session:
+            session.pop("otherMode")
         return redirect(url_for('mainpage'))
 
     # create new user, step 1 empty page
@@ -265,9 +266,9 @@ def editpage():
         # generate a table of the students, separating those who already have a stage from those who don't
         # note that all confirmed students will not appear anywhere
         students1 = User.query.filter(and_(User.usertype==ACC_STUDENT, User.stage_id==None)).all()
-        students2 = User.query.filter(and_(and_(User.usertype==ACC_STUDENT, User.stage_id!=None),User.PDFfiche!=None)).all()
+        students2 = User.query.filter(and_(and_(User.usertype==ACC_STUDENT, User.stage_id!=None),User.PDFfiche==None)).all()
 
-        return render_template("stage_page.html", devsite=devel_site, user=current_user, gdata=gendata, stage=sujet, studns=students1, studs=students2)
+        return render_template("stage_page.html", devsite=devel_site, user=current_user, gdata=gendata, stage=sujet, studns=students1, studs=students2, subjattach=True)
 
     if cmd.startswith('SubjAttach-') and current_user.usertype == ACC_SUPERV:
         # attach a student to a subject
