@@ -13,6 +13,9 @@ if __name__ == '__main__':
 #    file.close()
 
     print("--- command-line exec mode ---")
+
+    app.app_context().push()
+
     print("Generating db....")
     db.create_all()
     print("Populating with default users....");

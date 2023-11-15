@@ -91,7 +91,7 @@ def editpage():
             messages = checkuser('xxx', utype, fn, ln, em, 'a', 'a')
 
             # update user
-            theUser = User.query.filter_by(id=uid).first();
+            theUser = User.query.filter_by(id=uid).first()
             if not theUser:
                 render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid user id")
 
@@ -178,16 +178,15 @@ def editpage():
                 ext = request.files['s_pdf'].filename[-4:]
                 if not ext.upper() == ".PDF":
                     messages.append([3, "Le fichier n'est pas un PDF"])
+                if len(request.files['s_pdf'].filename) > 124:
+                    messages.append([3, "Nom du fichier trop long... utiliser moins de 120 caracteres, svp!"])
 
         if sid == -1:
-            sujet = Stage(supervisor_id=current_user.id, NStudents=0, Title=ti, Frozen=False)
+            sujet = Stage(supervisor_id=current_user.id, NStudents=0, Title=ti)
         else:
             sujet = Stage.query.filter_by(id=sid).first()
             if not sujet:
                 return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid sujet id")
-
-            if sujet.Frozen:
-                return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="cannot modify frozen sujet")
 
             sujet.Title = ti
 
@@ -202,13 +201,14 @@ def editpage():
                 db.session.commit()
 
             if 's_pdf' in request.files:
-                if sujet.PDFfile:
-                    if os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], sujet.PDFfile)):
-                        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], sujet.PDFfile))
-
                 # now save the new one
                 pdf_file = request.files['s_pdf']
                 if pdf_file:
+                    # delete previous one
+                    if sujet.PDFfile:
+                        if os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], sujet.PDFfile)):
+                            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], sujet.PDFfile))
+
                     filename = secure_filename(pdf_file.filename)
                     filename = "{}-{}".format(sujet.id, filename)
                     pdf_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))

@@ -48,7 +48,7 @@
                 <button class="btn btn-default" name="action" value="SubjEdit"><b>{{ sj.Title }}</b></button>
             </div>
         </div>
-        <p>Texte du sujet: <a href="/static/{{ sj.PDFfile }}">{{ sj.PDFfile }}</a></p>
+        <p>Texte du sujet: <a href="{{ url_for('static', filename=sj.PDFfile) }}">{{ sj.PDFfile }}</a></p>
         <p>{% for st in sj.students %}
                 {{ st.FirstName }} {{ st.LastName }} {% if st.PDFfiche %}(CONFIRME){% else %}<button class="btn btn-default" name="action" value="SubjDetach-{{ st.id }}">X</button>{% endif %}{{ ", " if not loop.last else "" }}
             {% else %}

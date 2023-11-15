@@ -6,6 +6,7 @@ from flask import render_template, redirect, request, url_for, session
 from flask_login import login_required, current_user
 from datetime import datetime
 
+
 @app.route('/main', methods=["GET", "POST"])
 def mainpage():
     if not current_user.is_authenticated:
@@ -35,7 +36,7 @@ def mainpage():
 
     if current_user.usertype == ACC_SUPERV:
         # get all subjets for this supervisor
-        subjects = Stage.query.all()
+        subjects = Stage.query.filter_by(supervisor_id=current_user.id).all()
 
         # subjects = Stage.query.filter_by(owner_id=current_user.id)
         return render_template("supervisor_page.html", devsite=devel_site, user=current_user, gdata=gendata, subs=subjects)

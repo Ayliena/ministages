@@ -93,6 +93,11 @@
             <h3>{{ sj.Title }}</h3>
             <div class="row">
                 <div class="col-sm-12">
+		    <p>Texte du sujet: <a href="{{ url_for('static', filename=sj.PDFfile) }}">{{ sj.PDFfile }}</a></p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
                     <p>Maître de stage : {{ sj.supervisor.FirstName }} {{ sj.supervisor.LastName }} &lt;{{ sj.supervisor.Email }}&gt;</p>
                 </div>
             </div>
