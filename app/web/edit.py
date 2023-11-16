@@ -288,7 +288,7 @@ def editpage():
         if student.stage_id != sujet.id and not student.PDFfiche:
             # in case we're switching stage, we need to remove the student from the count of the other stage
             if student.stage_id:
-                sujet2 = Stage.query.filter_by(id=sid).first()
+                sujet2 = Stage.query.filter_by(id=student.stage_id).first()
                 if not sujet2:
                     # this must not happen, we should report an internal error, but for the moment we just ignore the problem
                     student.stage_id = None
