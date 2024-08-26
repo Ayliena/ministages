@@ -24,6 +24,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(128), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+    newpwd_token = db.Column(db.String(32))
     usertype = db.Column(db.Integer)
     FirstName = db.Column(db.String(64), nullable=False)
     LastName = db.Column(db.String(64), nullable=False)
@@ -35,9 +36,11 @@ class User(UserMixin, db.Model):
     ValidAdmin = db.Column(db.Boolean)
     ValidScol = db.Column(db.Boolean)
     subjects = db.relationship('Stage', backref='supervisor', foreign_keys=[Stage.supervisor_id], lazy=True)
-
+    EvalDone = db.Column(db.Integer)
+    EvalText = db.Column(db.String(2048))
+    
     def __repr__(self):
-        return "<User {}={} {}".format(self.username, self.FirstName, self.LastName)
+        return "<User {}={} {}>".format(self.username, self.FirstName, self.LastName)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -50,4 +53,4 @@ class GlobalData(db.Model):
     __tablename__ = "globaldata"
 
     id = db.Column(db.Integer, primary_key=True)
-    Phase = db.Column(db.Integer)
+    PhaseMdS = db.Column(db.Integer)

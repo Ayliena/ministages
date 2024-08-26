@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <title>Stages L3</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!---*** Start: JQuery 3.3.1 version. ***--->
+<script language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<!---*** End: JQuery 3.3.1 version. ***--->
+<!---*** Start: Bootstrap 3.3.7 version files. ***--->
+<script language="javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<!---*** End: Bootstrap 3.3.7 version files. ***--->
+    </head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container">
+    {% if devsite %}<div class="row">
+	<div class="alert alert-danger">ATTENTION: ce site est la version en développement du site Stages L3, les informations de ce site ne correspondent
+        pas à la réalité.</div>
+    </div>{% endif %}
+    {% if msg %}{% for m in  msg %}
+        {% if m[0] == 0 %}<div class="alert alert-success">
+        {% elif m[0] == 1 %}<div class="alert alert-info">
+        {% elif m[0] == 2 %}<div class="alert alert-warning">
+        {% else %}<div class="alert alert-danger">{% endif %}
+        {{ m[1] }}</div>
+    {% endfor %}{% endif %}
+
+    <h2>Fiche d'evaluation de {{ st.FirstName }} {{ st.LastName }}</h2>
+
+    <hr>
+    <form action="/edit" method="POST">
+    <input type="hidden" name="s_id" value="{{ st.id }}">
+    <div class="form-group"><label class="control-label" for="c_comments">Commentaires:</label><textarea class="form-control" id="c_comments" name="c_comments" placeholder="Commentaires">{{ st.EvalText }}</textarea></div>
+    <hr>
+    <div class="row">
+        <div class="col-sm-12">
+            <button class="btn btn-default" type="submit" name="action" value="EvalSave">Sauvegarder</button>
+            <button class="btn btn-default" type="submit" name="action" value="EvalCancel">Annuler</button>
+        </div>
+    </div>
+    </div><!-- /.container -->
+</body>
+</html>

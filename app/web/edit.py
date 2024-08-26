@@ -1,7 +1,7 @@
 from app import app, db, devel_site
 from app.staticdata import ACC_STUDENT, ACC_SUPERV, ACC_SCOL, ACC_ADMIN
 from app.models import User, Stage, GlobalData
-from app.helpers import checkuser
+from app.helpers import checkuser, emailStudent
 from flask import render_template, redirect, request, url_for, session, Response
 from flask_login import login_required, current_user
 from sqlalchemy import and_
@@ -19,7 +19,8 @@ def editpage():
 
     # get generic configuration data
     gendata = GlobalData.query.first()
-
+    messages = []
+    
     # handle the actions
     if request.method == "POST":
         cmd = request.form["action"]
@@ -44,6 +45,20 @@ def editpage():
         return redirect(url_for('mainpage'))
 
     # create new user, step 1 empty page
+    if cmd == "PhaseAdvance" and current_user.usertype == ACC_ADMIN:
+        np = gendata.PhaseMdS + 1
+        if np > 3:
+            np = 0
+
+        gendata.PhaseMdS = np
+        db.session.commit()
+
+        # remain on same page, but provide a message
+        messages.append([ 1, "Avancement vers la phase {}.".format(np) ])
+        messages.append([ 2, "ATTENTION: aucun changement du DB est effectué (clean / etc.), il faut le faire manuellement" ])
+        session["pendingmessages"] = messages
+        return redirect(url_for('mainpage'))
+
     if cmd == "UserAdd" and current_user.usertype == ACC_ADMIN:
         # generate empty page
         return render_template("user_page.html", devsite=devel_site, user=current_user, gdata=gendata)
@@ -62,8 +77,17 @@ def editpage():
             # new user
             un = request.form["u_username"]
 
+            # check for unique username and email
+            theUser = User.query.filter_by(username=un).first()
+            if theUser:
+                messages.append([ 3, "Nom d'utilisateur déjà utilisé" ])
+            
+            theUser = User.query.filter_by(Email=em).first()
+            if theUser:
+                messages.append([ 3, "Adresse mail déjà associée à un utilisateur" ])
+            
             # note that passwords are not checked here
-            messages = checkuser(un, utype, fn, ln, em, 'a', 'a')
+            messages = messages + checkuser(un, utype, fn, ln, em, 'a', 'a')
 
             # handle the password stuff
             if pw1 == "" or pw1 == "random":
@@ -84,18 +108,25 @@ def editpage():
 
             # generate new user
             db.session.add(newuser)
-
             session["pendingmessages"] = [ [0, "Utilisateur {} crée avec mot de passe = {}".format(un, pw1) ] ]
 
         else:
             # check the data (except username which is already defined and password, checked later)
-            messages = checkuser('xxx', utype, fn, ln, em, 'a', 'a')
+            messages = messages + checkuser('xxx', utype, fn, ln, em, 'a', 'a')
 
             # update user
             theUser = User.query.filter_by(id=uid).first()
             if not theUser:
                 render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid user id")
 
+            # check the email, of course we expect to find it....
+            emUser = User.query.filter_by(Email=em).first()
+            if emUser.id != uid:
+                # email already associated to another account
+                messages.append([ 3, "Adresse mail {} d\'ej\`a associ\'ee au compte '{}'".format(em, emUser.username) ])
+                # regen the page
+                return render_template("user_page.html", devsite=devel_site, user=current_user, msg=messages, gdata=gendata, edituser=theUser)
+                
             # handle the password stuff
             if pw1 == "random":
                 alphabet = string.ascii_letters + string.digits
@@ -162,8 +193,6 @@ def editpage():
 
     if cmd == "SubjSave" and current_user.usertype == ACC_SUPERV:
         # generate and save the PDF file and the object
-        messages = []
-
         sid = int(request.form["s_id"])
         ti = request.form["s_title"]
         if not ti:
@@ -285,9 +314,11 @@ def editpage():
 
         # make sure the student is not already attached (if yes, ignore)
         # make sure the student is not "confirmed"
+        autodetach = False
         if student.stage_id != sujet.id and not student.PDFfiche:
             # in case we're switching stage, we need to remove the student from the count of the other stage
             if student.stage_id:
+                autodetach = True
                 sujet2 = Stage.query.filter_by(id=student.stage_id).first()
                 if not sujet2:
                     # this must not happen, we should report an internal error, but for the moment we just ignore the problem
@@ -299,6 +330,9 @@ def editpage():
             student.stage_id = sujet.id
             db.session.commit()
 
+            # send a message to the student
+            emailStudent(student, (12 if autodetach else 10))
+            
         return redirect(url_for('mainpage'))
 
     if cmd.startswith('SubjDetach-') and current_user.usertype == ACC_SUPERV:
@@ -324,12 +358,40 @@ def editpage():
             sujet.NStudents = sujet.NStudents - 1
             db.session.commit()
 
+            emailStudent(student, 11)
+
         return redirect(url_for('mainpage'))
 
+    if cmd.startswith('Evaluate-') and current_user.usertype == ACC_SUPERV:
+        # evaluation of a student: generate the page
+        # get the student
+        stid = int(cmd[9:])
+        student = User.query.filter_by(id=stid).first()
+        if not student or student.usertype != ACC_STUDENT:
+            return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid student id")
+
+        # generate the page
+        return render_template("evaluate_page.html", devsite=devel_site, user=current_user, st=student, gdata=gendata)
+
+    if cmd.startswith('EvalSave') and current_user.usertype == ACC_SUPERV:
+        # save the evaluation data
+        # get the student
+        sid = int(request.form["s_id"])
+        student = User.query.filter_by(id=sid).first()
+        if not student or student.usertype != ACC_STUDENT:
+            return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid student id")
+
+        student.EvalDone = 1;
+        student.EvalText = request.form["c_comments"]
+        db.session.commit()
+
+        return redirect(url_for('mainpage'))
+        
+    if cmd.startswith('EvalCancel') and current_user.usertype == ACC_SUPERV:
+        return redirect(url_for('mainpage'))
+    
     if cmd == "StudFiche" and current_user.usertype == ACC_STUDENT:
         # save the PDF file
-        messages = []
-
         # note that for a new subject a PDF MUST be provided
         if not 's_pdf' in request.files or not request.files['s_pdf']:
             messages.append([3, "Fichier PDF non fourni"])
@@ -377,6 +439,9 @@ def editpage():
 
         student.ValidScol = True
         db.session.commit()
+
+        emailStudent(student, 20)
+        
         return redirect(url_for('mainpage'))
 
     if cmd.startswith("AdminValid-") and current_user.usertype == ACC_ADMIN:
@@ -389,6 +454,9 @@ def editpage():
 
         student.ValidAdmin = True
         db.session.commit()
+
+        emailStudent(student, 20)
+
         return redirect(url_for('mainpage'))
 
     if cmd == "DataExport" and (current_user.usertype == ACC_ADMIN or current_user.usertype == ACC_SCOL):

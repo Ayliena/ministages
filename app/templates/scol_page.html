@@ -29,6 +29,16 @@
         {{ m[1] }}</div>
     {% endfor %}{% endif %}
 
+    {% if gdata.PhaseMdS == 1 %}
+    <h2>Nous sommes actuellement en phase 1: dépôt de sujets et candidatures</h2>
+    {% elif gdata.PhaseMdS == 2 %}
+    <h2>Nous sommes actuellement en phase 2: deroulement des stages</h2>
+    {% elif gdata.PhaseMdS == 3 %}
+    <h2>Nous sommes actuellement en phase 3: évaluation des stagiaires</h2>
+    {% else %}
+    <h2>Nous sommes actuellement en phase 0: site inactif ou en test</h2>
+    {% endif %}
+	    
     <form action="/edit" enctype="multipart/form-data" method="POST">
         <div class="row">
             <div class="col-sm-12">

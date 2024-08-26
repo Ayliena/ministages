@@ -31,10 +31,10 @@
         pas à la réalité.</div>
     </div>{% endif %}
     {% if msg %}{% for m in  msg %}
-        {% if m[0] == 0 %}<div class="alert alert-success">{% endif %}
-        {% if m[0] == 1 %}<div class="alert alert-info">{% endif %}
-        {% if m[0] == 2 %}<div class="alert alert-warning">{% endif %}
-        {% if m[0] == 3 %}<div class="alert alert-danger">{% endif %}
+        {% if m[0] == 0 %}<div class="alert alert-success">
+        {% elif m[0] == 1 %}<div class="alert alert-info">
+        {% elif m[0] == 2 %}<div class="alert alert-warning">
+        {% else %}<div class="alert alert-danger">{% endif %}
         {{ m[1] }}</div>
     {% endfor %}{% endif %}
 
@@ -91,10 +91,16 @@
     {% elif stagedit %}
         <h2>Sujets de stage et validation des fiches logistiques</h2>
         <hr>
+        <form action="/edit" method="POST">
+        <div class="row">
+            <div class="col-sm-12">
+                <button class="btn btn-default" type="submit" name="action" value="MainPage">Retour à la page principale</button>
+            </div>
+        </div>
+        <hr>
         <p>Cette page recense l'intégralité des sujets de stage déposés avec les étudiants associés.  En tant que {% if user.usertype==3 %}responsable des projets tutorés
         {% else %}scolarité{% endif %} tu peux valider la fiche logistique soumise par les étudiants.  Une fois les deux validations (scolarité + responsable) obtenues, le site indique à l'étudiant
         comment procéder pour la convention de stage.</p>
-        <form action="/edit" method="POST">
         {% for sj in stagedit %}
             <hr>
             <h3>{{ sj.Title }}</h3>
@@ -130,17 +136,19 @@
         {% else %}
             Aucun sujet de stage n'a pas encore été déposé.
         {% endfor %}
+        </form>
+    {% else %}
+        <h2>Sujets de stage</h2>
         <hr>
+        <form action="/edit" method="POST">
         <div class="row">
             <div class="col-sm-12">
                 <button class="btn btn-default" type="submit" name="action" value="MainPage">Retour à la page principale</button>
             </div>
         </div>
         </form>
-    {% else %}
-        <h2>Sujets de stage</h2>
-        <hr>
-        <p>Rappel: il faut contacter le maître de stage pour choisir le sujet: seulement lui peut indiquer que vous participerez à son stage.</p>
+        {% if gdata.PhaseMdS == 1 %}<hr>
+        <p>Rappel: il faut contacter le maître de stage pour choisir le sujet: seulement lui peut indiquer que vous participerez à son stage.</p>{% endif %}
         {% for sj in stages %}
             <hr>
             <h3>{{ sj.Title }}</h3>
@@ -155,14 +163,6 @@
         {% else %}
             Aucun sujet de stage n'a pas encore été déposé.
         {% endfor %}
-        <hr>
-        <form action="/edit" method="POST">
-        <div class="row">
-            <div class="col-sm-12">
-                <button class="btn btn-default" type="submit" name="action" value="MainPage">Retour à la page principale</button>
-            </div>
-        </div>
-        </form>
     {% endif %}
     </div><!-- /.container -->
 </body>

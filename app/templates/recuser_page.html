@@ -19,7 +19,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">Stages L3: nouveau compte</a>
+                    <a class="navbar-brand" href="#">Stages L3: nouveau mot de passe</a>
                 </div>
             </div>
         </nav>
@@ -37,31 +37,23 @@
             {{ m[1] }}</div>
         {% endfor %}{% endif %}
 
-        <form action="/create" id="u_form" enctype="multipart/form-data" method="POST">
-            <div class="form-group">
-                <label for="u_username">Utilisateur :</label>
-                <input class="form-control" type="text" name="u_username" value="{% if newuser %}{{ newuser.username }}{% endif %}">
-            </div>
-            <div class="form-group">
-                <label for="u_firstname">Prénom :</label>
-                <input class="form-control" type="text" name="u_firstname" value="{% if newuser %}{{ newuser.FirstName }}{% endif %}">
-            </div>
-            <div class="form-group">
-                <label for="u_lastname">Nom :</label>
-                <input class="form-control" type="text" name="u_lastname" value="{% if newuser %}{{ newuser.LastName }}{% endif %}">
-            </div>
-            <div class="form-group">
-                <label for="u_email">E-mail :</label>
-                <input class="form-control" type="text" name="u_email" value="{% if newuser %}{{ newuser.Email }}{% endif %}">
-            </div>
-            <hr>
-            <div class="row">
-                <div class="col-sm-12">
-                    <button class="btn btn-default" type="submit" name="action" value="UserNew">Créer le compte</button>
-                    <button class="btn btn-default" type="submit" name="action" value="UserCancel">Annuler</button>
-                </div>
-            </div>
-        </form>
+	{% if email %}
+	    <p>Un mail avec les informations du compte et le lien pour générer un mot de passe a été envoyé à {{ email }}.</p>
+	{% else %}
+            <form action="/recreate" id="u_form" enctype="multipart/form-data" method="POST">
+                <div class="form-group">
+                    <label for="u_email">E-mail :</label>
+                    <input class="form-control" type="text" name="u_email">
+		</div>
+		<hr>
+		<div class="row">
+                  <div class="col-sm-12">
+                      <button class="btn btn-default" type="submit" name="action" value="UserSave">Envoyer</button>
+                      <button class="btn btn-default" type="submit" name="action" value="UserCancel">Annuler</button>
+                  </div>
+	      </div>
+            </form>
+	{% endif %}
         </div>
     </body>
 </html>

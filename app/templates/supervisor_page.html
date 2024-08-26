@@ -31,16 +31,32 @@
         pas à la réalité.</div>
     </div>{% endif %}
     {% if msg %}{% for m in  msg %}
-        {% if m[0] == 0 %}<div class="alert alert-success">{% endif %}
-        {% if m[0] == 1 %}<div class="alert alert-info">{% endif %}
-        {% if m[0] == 2 %}<div class="alert alert-warning">{% endif %}
-        {% if m[0] == 3 %}<div class="alert alert-danger">{% endif %}
+        {% if m[0] == 0 %}<div class="alert alert-success">
+        {% elif m[0] == 1 %}<div class="alert alert-info">
+        {% elif m[0] == 2 %}<div class="alert alert-warning">
+        {% else %}<div class="alert alert-danger">{% endif %}
         {{ m[1] }}</div>
     {% endfor %}{% endif %}
 
+    {% if gdata.PhaseMdS == 1 %}
+    <h2>Phase 1: dépôt de sujets et candidatures</h2>
+    <p>On est actuellement dans la phase active de la mise en place des stages.  Vous pouvez déposer des sujets et y associer des étudiants après qu'ils ont candidaté en vous contactant.  Il reste possible de modifier des sujets de stage, mais ceci annule automatiquement les candidatures definies.</p>
+    {% elif gdata.PhaseMdS == 2 %}
+    <h2>Phase 2: déroulement des stages</h2>
+    <p>La phase de dépôt de sujet et recherche de stages est terminée.  Les stages se déroulent ou vont bientôt démarrer: plus aucun changement est possible.  Si des erreurs sont présents, il faut contacter les responsables de l'UE pour qu'ils corrigent les informations manuellement.</p>
+    {% elif gdata.PhaseMdS == 3 %}
+    <h2>Phase 3: évaluation des candidats</h2>
+    <p>Les stages sont finis (ou presque) et vous devez compléter la fiche d'évaluation pour les étudiants que vous avez encadré.</p>
+    {% else %}
+    <h2>Phase 0: site inactif ou en test</h2>
+    <p>Le site est actuellement inactif ou en phase de développement/test.  Les fonctionnalités du site sont disponibles, mais les sujets déposés pourraient disparaître et il se peut que des crash ou des choses bizarres se produisent.....</p>
+    <p>On reviendra à la normale une fois que tout est dans l'ordre et que le cours demarre.</p>
+    {% endif %}
+	    
     <h2>Sujets déposés</h2>
     {% if subs %}
         {% for sj in subs %}
+        {% if gdata.PhaseMdS == 1 %}
         <form action="/edit" onsubmit="return confirmForm()" method="POST">
         <input type="hidden" name="s_id" value="{{ sj.id }}">
         <div class="row">
@@ -68,13 +84,45 @@
         </div>{% endif %}
         </form>
         <hr>
+	{% elif gdata.PhaseMdS == 3 %}
+        <form action="/edit" method="POST">
+        <input type="hidden" name="s_id" value="{{ sj.id }}">
+        <div class="row">
+            <div class="col-sm-12">
+                <p><b>{{ sj.Title }}</b></p>
+            </div>
+        </div>
+        <p>Texte du sujet: <a href="{{ url_for('static', filename=sj.PDFfile) }}">{{ sj.PDFfile }}</a></p>
+        <p>{% for st in sj.students %}
+                <button class="btn btn-default" name="action" value="Evaluate-{{ st.id }}">{{ st.FirstName }} {{ st.LastName }}</button>{% if st.EvalDone %}(EVALUE){% else %}(à évaluer){% endif %}{{ ", " if not loop.last else "" }}
+            {% else %}
+                Aucun étudiant est associé à ce stage.
+            {% endfor %}</p>
+        </form>
+        <hr>
+	{% else %}
+        <div class="row">
+            <div class="col-sm-12">
+                <p><b>{{ sj.Title }}</b></p>
+            </div>
+        </div>
+        <p>Texte du sujet: <a href="{{ url_for('static', filename=sj.PDFfile) }}">{{ sj.PDFfile }}</a></p>
+        <p>{% for st in sj.students %}
+                {{ st.FirstName }} {{ st.LastName }} {% if st.PDFfiche %}(CONFIRME){% endif %}{{ ", " if not loop.last else "" }}
+            {% else %}
+                Aucun étudiant est associé à ce stage.
+            {% endfor %}</p>
+        <hr>
+	{% endif %}
         {% endfor %}
     {% else %}
         Aucun sujet de stage déposé.
     {% endif %}
-    <form action="/edit" id="u_form" enctype="multipart/form-data" method="POST">
-        <button class="btn btn-default" type="submit" name="action" value="SubjAdd">Rajouter un sujet de stage</button>
-    </form>
+    {% if gdata.PhaseMdS == 1 %}
+        <form action="/edit" id="u_form" enctype="multipart/form-data" method="POST">
+            <button class="btn btn-default" type="submit" name="action" value="SubjAdd">Rajouter un sujet de stage</button>
+        </form>
+    {% endif %}
     </div><!-- /.container -->
 </body>
 </html>
