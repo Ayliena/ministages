@@ -94,7 +94,7 @@
         </div>
         <p>Texte du sujet: <a href="{{ url_for('static', filename=sj.PDFfile) }}">{{ sj.PDFfile }}</a></p>
         <p>{% for st in sj.students %}
-                <button class="btn btn-default" name="action" value="Evaluate-{{ st.id }}">{{ st.FirstName }} {{ st.LastName }}</button>{% if st.EvalDone %}(EVALUE){% else %}(à évaluer){% endif %}{{ ", " if not loop.last else "" }}
+                <button class="btn btn-default" name="action" value="Evaluate-{{ st.id }}">{{ st.FirstName }} {{ st.LastName }}</button>{% if st.evaluation_id %}<span class="bg-success">(Evalué le {{ st.evaluation.EvalDate.strftime("%d/%m/%Y") }})</span>{% else %}<span class="bg-warning">(à évaluer)</span>{% endif %}{{ ", " if not loop.last else "" }}
             {% else %}
                 Aucun étudiant est associé à ce stage.
             {% endfor %}</p>

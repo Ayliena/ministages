@@ -60,6 +60,7 @@ def createaccount():
 
     # 2nd step of account creation
     cmd = request.form["action"]
+    messages = []
 
     if cmd == "UserNew":
         # check the data and return error if something is wrong
@@ -93,10 +94,10 @@ def createaccount():
 
             # send the email
             msg = MIMEText("Ici le site StagesL3,\n\nVotre nouveau compte est: {}\n\nLe mot de passe peut être généré en suivant ce lien:\nhttps://stagesl3.ipcms.fr/newpwd?token={}\n\nA bientôt".format(newuser.username, newuser.newpwd_token))
-            msg["From"] = "noreply@stagesl3.ipcms.fr"
+            msg["From"] = app.config['MINISTAGES_EMAIL']
             msg["To"] = emailaddr
             msg["Subject"] = "Votre compte StagesL3"
-            msg["Reply-To"] = "PLEASE_DO_NOT_REPLY_TO_THIS_ADDRESS@stagesl3.ipcms.fr"
+            msg["Reply-To"] = app.config['MINISTAGES_EMAIL']
             sendmail_location = "/usr/sbin/sendmail"
             subprocess.run([sendmail_location, "-t", "-oi"], input=msg.as_bytes())
 
@@ -138,12 +139,10 @@ def recoveraccount():
 
         # send the email
         msg = MIMEText("Ici le site StagesL3,\n\nVotre compte est: {}\n\nUn nouveau mot de passe peut être généré en suivant ce lien:\nhttps://stagesl3.ipcms.fr/newpwd?token={}\n\nA bientôt".format(theUser.username, theUser.newpwd_token))
-        msg["From"] = "noreply@stagesl3.ipcms.fr"
-        #msg["To"] = "ishark@free.fr"
-        #msg["To"] = "alberto.barsella@ipcms.unistra.fr"
+        msg["From"] = app.config['MINISTAGES_EMAIL']
         msg["To"] = emailaddr
         msg["Subject"] = "Votre compte StagesL3"
-        msg["Reply-To"] = "PLEASE_DO_NOT_REPLY_TO_THIS_ADDRESS@stagesl3.ipcms.fr"
+        msg["Reply-To"] = app.config['MINISTAGES_EMAIL']
         sendmail_location = "/usr/sbin/sendmail"
         subprocess.run([sendmail_location, "-t", "-oi"], input=msg.as_bytes())
             

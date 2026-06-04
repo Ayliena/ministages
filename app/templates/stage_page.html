@@ -117,19 +117,24 @@
             {% for st in sj.students %}
             <div class="row">
                 <div class="col-sm-6">
-                    {{ st.FirstName }} {{ st.LastName }}{% if st.PDFfiche %} (<a href="static/{{ st.PDFfiche }}" target="_blank">{{ st.PDFfiche }}</a>){% endif %}
+                    {{ st.FirstName }} {{ st.LastName }} ({{ st.Email }})
                 </div>
-                {% if st.PDFfiche %}
-                    {% if st.ValidScol %}<div class="col-sm-3 bg-success">SCOLARITE: validée</div>
-                    {% else %}{% if user.usertype==2 %}<div class="col-sm-3"><button class="btn btn-default" type="submit" name="action" value="ScolValid-{{st.id}}">SCOLARITE: valider</button></div>
-                              {% else %}<div class="col-sm-3 bg-warning">SCOLARITE: non validée</div>{% endif %}{% endif %}
-                    {% if st.ValidAdmin %}<div class="col-sm-3 bg-success">RESPONSABLE: validée</div>
-                    {% else %}{% if user.usertype==3 %}<div class="col-sm-3"><button class="btn btn-default" type="submit" name="action" value="AdminValid-{{st.id}}">RESPONSABLE: valider</button></div>
-                              {% else %}<div class="col-sm-3 bg-warning">RESPONSABLE: non validée</div>{% endif %}{% endif %}
-                {% else %}
+                {% if not st.PDFfiche %}
                 <div class="col-sm-6 bg-danger">
                     Fiche logistique non déposée
                 </div>
+		{% else %}
+	    </div>
+	    <div class="row">
+	        <div class="col-sm-6">
+		  <a href="static/{{ st.PDFfiche }}" target="_blank">{{ st.PDFfiche }}</a>
+		</div>
+                {% if st.ValidScol %}<div class="col-sm-3 bg-success">SCOLARITE: validée</div>
+                {% else %}{% if user.usertype==2 %}<div class="col-sm-3"><button class="btn btn-default" type="submit" name="action" value="ScolValid-{{st.id}}">SCOLARITE: valider</button></div>
+                {% else %}<div class="col-sm-3 bg-warning">SCOLARITE: non validée</div>{% endif %}{% endif %}
+                {% if st.ValidAdmin %}<div class="col-sm-3 bg-success">RESPONSABLE: validée</div>
+                {% else %}{% if user.usertype==3 %}<div class="col-sm-3"><button class="btn btn-default" type="submit" name="action" value="AdminValid-{{st.id}}">RESPONSABLE: valider</button></div>
+                {% else %}<div class="col-sm-3 bg-warning">RESPONSABLE: non validée</div>{% endif %}{% endif %}
                 {% endif %}
             </div>
             {% endfor %}

@@ -29,19 +29,204 @@
         {{ m[1] }}</div>
     {% endfor %}{% endif %}
 
+    {% if ev %}
     <h2>Fiche d'evaluation de {{ st.FirstName }} {{ st.LastName }}</h2>
+    <h2>({{ st.stage.Title }})</h2>
 
     <hr>
-    <form action="/edit" method="POST">
+    <form action="/edit" method="POST">{% if readonly %}<fieldset disabled>{% endif %}
     <input type="hidden" name="s_id" value="{{ st.id }}">
-    <div class="form-group"><label class="control-label" for="c_comments">Commentaires:</label><textarea class="form-control" id="c_comments" name="c_comments" placeholder="Commentaires">{{ st.EvalText }}</textarea></div>
     <hr>
+    <h2>Assiduité</h2>
+    <p>Veuillez préciser s’il y a eu des absences justifiées ou injustifiées et si les séances ont été rattrapées.</p>
+    <div class="row">
+      <div class="col-md-2">
+	<div class="input-group">
+          <input type="radio" name="absgroup" id="c_absyes" value="1"{% if ev.Absence %} checked{% endif %}>
+	  <label class="control-label" for="c_absyes">Oui</label>
+          <input type="radio" name="absgroup" id="c_absno" value="0"{% if not ev.Absence %} checked{% endif %}>
+	  <label class="control-label" for="c_absno">Non</label>
+	</div>
+      </div>
+      <div class="col-md-10">
+	Si oui, nombre d'absences et precisions:
+      </div>
+    </div>
+    <div class="form-group">
+      <textarea class="form-control" id="c_absence" name="c_absence" placeholder="Precisions">{{ ev.AbsenceText }}</textarea>
+    </div>
+    <h2>Caractérisation du stage</h2>
+    <p>
+    En plus de l’aspect bibliographique inhérent au projet tutoré, nous souhaiterions connaître la nature du travail effectué par votre stagiaire afin de mieux l’évaluer lors de la soutenance. Exemples:</p>
+    <ul>
+      <li><b>Informatique:</b> utilisation de logiciels, développement de scripts,  écritures de codes Fortran/C++, ...</li>
+      <li><b>expérimental:</b> montage d’expérience, prise de données, analyse de données, caractérisation d’un détecteur, ...</li>
+      <li><b>calculatoire:</b> donner des indices permettant d’évaluer le niveau de difficulté et le temps consacré à ces calculs</li>
+    </ul>
+    <p>Remarque:  il est également possible que le stage n’ait été que bibliographique, ce qui n’est pas un problème en soi.</p>
+    <div class="form-group"><label class="control-label" for="c_biblio">Bibliographique:</label><textarea class="form-control" id="c_biblio" name="c_biblio" placeholder="Partie bibliographique">{{ ev.StBiblio }}</textarea></div>
+    <div class="form-group"><label class="control-label" for="c_info">Informatique:</label><textarea class="form-control" id="c_info" name="c_info" placeholder="Partie Informatique">{{ ev.StInfo }}</textarea></div>
+    <div class="form-group"><label class="control-label" for="c_exp">Experimentale:</label><textarea class="form-control" id="c_exp" name="c_exp" placeholder="Partie Experimentale">{{ ev.StExp }}</textarea></div>
+    <div class="form-group"><label class="control-label" for="c_th">Calculatoire:</label><textarea class="form-control" id="c_th" name="c_th" placeholder="Partie Calculatoire">{{ ev.StTh }}</textarea></div>
+
+    <div class="row">
+      <div class="col-md-2">
+	<p>Travail</p>
+      </div>
+      <div class="col-md-6">
+	<div class="input-group">
+	  <span class="input-group-addon">
+            <input type="radio" name="workgroup" id="c_work4" value="4"{% if ev.Work == 4 %} checked{% endif %}>
+	    <label class="control-label" for="c_work4">Tres bien</label>
+            <input type="radio" name="workgroup" id="c_work3" value="3"{% if ev.Work == 3 %} checked{% endif %}>
+	    <label class="control-label" for="c_work3">Bien</label>
+            <input type="radio" name="workgroup" id="c_work2" value="2"{% if ev.Work == 2 %} checked{% endif %}>
+	    <label class="control-label" for="c_work2">Acceptable</label>
+            <input type="radio" name="workgroup" id="c_work1" value="1"{% if ev.Work == 1 %} checked{% endif %}>
+	    <label class="control-label" for="c_work1">Insuffisant</label>
+            <input type="radio" name="workgroup" id="c_work0" value="0"{% if ev.Work == 0 %} checked{% endif %}>
+	    <label class="control-label" for="c_work0">Sans avis</label>
+	  </span>
+	</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-2">
+	<p>Connaissances</p>
+      </div>
+      <div class="col-md-6">
+	<div class="input-group">
+	  <span class="input-group-addon">
+            <input type="radio" name="knowgroup" id="c_know4" value="4"{% if ev.Know == 4 %} checked{% endif %}>
+	    <label class="control-label" for="c_know4">Tres bien</label>
+            <input type="radio" name="knowgroup" id="c_know3" value="3"{% if ev.Know == 3 %} checked{% endif %}>
+	    <label class="control-label" for="c_know3">Bien</label>
+            <input type="radio" name="knowgroup" id="c_know2" value="2"{% if ev.Know == 2 %} checked{% endif %}>
+	    <label class="control-label" for="c_know2">Acceptable</label>
+            <input type="radio" name="knowgroup" id="c_know1" value="1"{% if ev.Know == 1 %} checked{% endif %}>
+	    <label class="control-label" for="c_know1">Insuffisant</label>
+            <input type="radio" name="knowgroup" id="c_know0" value="0"{% if ev.Know == 0 %} checked{% endif %}>
+	    <label class="control-label" for="c_know0">Sans avis</label>
+	  </span>
+	</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-2">
+	<p>Autonomie</p>
+      </div>
+      <div class="col-md-6">
+	<div class="input-group">
+	  <span class="input-group-addon">
+            <input type="radio" name="indigroup" id="c_indi4" value="4"{% if ev.Indi == 4 %} checked{% endif %}>
+	    <label class="control-label" for="c_indi4">Tres bien</label>
+            <input type="radio" name="indigroup" id="c_indi3" value="3"{% if ev.Indi == 3 %} checked{% endif %}>
+	    <label class="control-label" for="c_indi3">Bien</label>
+            <input type="radio" name="indigroup" id="c_indi2" value="2"{% if ev.Indi == 2 %} checked{% endif %}>
+	    <label class="control-label" for="c_indi2">Acceptable</label>
+            <input type="radio" name="indigroup" id="c_indi1" value="1"{% if ev.Indi == 1 %} checked{% endif %}>
+	    <label class="control-label" for="c_indi1">Insuffisant</label>
+            <input type="radio" name="indigroup" id="c_indi0" value="0"{% if ev.Indi == 0 %} checked{% endif %}>
+	    <label class="control-label" for="c_indi0">Sans avis</label>
+	  </span>
+	</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-2">
+	<p>Initiative</p>
+      </div>
+      <div class="col-md-6">
+	<div class="input-group">
+	  <span class="input-group-addon">
+            <input type="radio" name="initgroup" id="c_init4" value="4"{% if ev.Init == 4 %} checked{% endif %}>
+	    <label class="control-label" for="c_init4">Tres bien</label>
+            <input type="radio" name="initgroup" id="c_init3" value="3"{% if ev.Init == 3 %} checked{% endif %}>
+	    <label class="control-label" for="c_init3">Bien</label>
+            <input type="radio" name="initgroup" id="c_init2" value="2"{% if ev.Init == 2 %} checked{% endif %}>
+	    <label class="control-label" for="c_init2">Acceptable</label>
+            <input type="radio" name="initgroup" id="c_init1" value="1"{% if ev.Init == 1 %} checked{% endif %}>
+	    <label class="control-label" for="c_init1">Insuffisant</label>
+            <input type="radio" name="initgroup" id="c_init0" value="0"{% if ev.Init == 0 %} checked{% endif %}>
+	    <label class="control-label" for="c_init0">Sans avis</label>
+	  </span>
+	</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-2">
+	<p>Rigueur</p>
+      </div>
+      <div class="col-md-6">
+	<div class="input-group">
+	  <span class="input-group-addon">
+            <input type="radio" name="rigrgroup" id="c_rigr4" value="4"{% if ev.Rigr == 4 %} checked{% endif %}>
+	    <label class="control-label" for="c_rigr4">Tres bien</label>
+            <input type="radio" name="rigrgroup" id="c_rigr3" value="3"{% if ev.Rigr == 3 %} checked{% endif %}>
+	    <label class="control-label" for="c_rigr3">Bien</label>
+            <input type="radio" name="rigrgroup" id="c_rigr2" value="2"{% if ev.Rigr == 2 %} checked{% endif %}>
+	    <label class="control-label" for="c_rigr2">Acceptable</label>
+            <input type="radio" name="rigrgroup" id="c_rigr1" value="1"{% if ev.Rigr == 1 %} checked{% endif %}>
+	    <label class="control-label" for="c_rigr1">Insuffisant</label>
+            <input type="radio" name="rigrgroup" id="c_rigr0" value="0"{% if ev.Rigr == 0 %} checked{% endif %}>
+	    <label class="control-label" for="c_rigr0">Sans avis</label>
+	  </span>
+	</div>
+      </div>
+    </div>
+
+    <h2>Rapport et soutenance</h2>
+    <p>Nous souhaiterions savoir jusqu’à quel point vous l’avez préparé dans l’écriture de son rapport et la préparation de sa soutenance.<br>
+      Avez-vous vu/corrigé le rapport ? Si oui, combien avez-vous eu d’itérations ?</p>
+    <div class="input-group">
+      <span class="input-group-addon">
+        <input type="radio" name="readgroup" id="c_repreadyes" value="1"{% if ev.RepRead %} checked{% endif %}>
+	<label class="control-label" for="c_repreadyes">Oui</label>
+        <input type="radio" name="readgroup" id="c_repreadno" value="0"{% if not ev.RepRead %} checked{% endif %}>
+	<label class="control-label" for="c_repreadno">Non</label>
+      </span>
+      <label class="control-label" for="c_repreadn">Nombre d'iterations</label>
+      <input type="text" name="c_repreadn" id="c_repreadn" value="{{ ev.RepReadN }}">
+    </div>
+
+    <h2>Autres commentaires</h2>
+    <textarea class="form-control" id="c_comments" name="c_comments" placeholder="Commentaires">{{ ev.Comments }}</textarea>
+    <hr>
+    {% if readonly %}</fieldset>{% endif %}
     <div class="row">
         <div class="col-sm-12">
-            <button class="btn btn-default" type="submit" name="action" value="EvalSave">Sauvegarder</button>
+            {% if not readonly %}<button class="btn btn-default" type="submit" name="action" value="EvalSave">Sauvegarder</button>{% endif %}
             <button class="btn btn-default" type="submit" name="action" value="EvalCancel">Annuler</button>
         </div>
     </div>
+    </form>
+    {% else %}
+        <h2>Sujets de stage et fiches d'appreciation</h2>
+        <hr>
+        <form action="/edit" method="POST">
+        <div class="row">
+            <div class="col-sm-12">
+                <button class="btn btn-default" type="submit" name="action" value="MainPage">Retour à la page principale</button>
+            </div>
+        </div>
+        <hr>
+        <p>Cette page recense l'intégralité des sujets de stage déposés avec les étudiants associés et donne accès aux fiches d'appreciation remplies par les maîtres de stage.</p>
+        {% for sj in stagedit %}
+            <hr>
+            <h3>{{ sj.Title }}</h3>
+            <div class="row">
+                <div class="col-sm-12">
+                    <p>Maître de stage : {{ sj.supervisor.FirstName }} {{ sj.supervisor.LastName }} &lt;{{ sj.supervisor.Email }}&gt;</p>
+                </div>
+            </div>
+            <p>{% for st in sj.students %}
+                  {% if st.evaluation_id %}<button class="btn btn-default" name="action" value="EvalView-{{ st.id }}">{{ st.FirstName }} {{ st.LastName }}</button>{% else %}<span class="bg-danger">{{ st.FirstName }} {{ st.LastName }}: non-évalué</span>{% endif %}{{ ", " if not loop.last else "" }}
+            {% else %}
+                Aucun étudiant est associé à ce stage.
+            {% endfor %}</p>
+        {% endfor %}
+        </form>
+    {% endif %}
     </div><!-- /.container -->
 </body>
 </html>

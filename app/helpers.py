@@ -48,7 +48,7 @@ def emailStudent(student, mtype):
 
     # generate the apprpriate mail message
     if mtype == 10 or mtype == 12:
-        msg = MIMEText("Ici le site StagesL3,\n\nLe maitre de stage: {} {} <{}> vous a associé à son sujet: \"{}\".{}\n\nPensez à vous connecter au site pour continuer le processus.".format(student.stage.supervisor.FirstName, student.stage.supervisor.LastName, student.stage.supervisor.Email, student.stage.Title, ("(ceci vous a dissocié d'un sujet de stage precedemment choisi)" if mtype == 12 else "")))
+        msg = MIMEText("Ici le site StagesL3,\n\nLe maitre de stage: {} {} <{}> vous a associé à son sujet: \"{}\".{}\n\nPensez à vous connecter au site pour continuer le processus.".format(student.stage.supervisor.FirstName, student.stage.supervisor.LastName, student.stage.supervisor.Email, student.stage.Title, ("\n(ceci vous a dissocié d'un sujet de stage precedemment choisi)" if mtype == 12 else "")))
         msg["Subject"] = "StagesL3: associé à un stage"
 
     elif mtype == 11:
@@ -58,7 +58,7 @@ def emailStudent(student, mtype):
     elif mtype == 20:
         # only send the message if everything is valid
         if student.ValidScol and student.ValidAdmin:
-            msg = MIMEText("Ici le site StagesL3,\n\nVotre fiche logistique a été validée par un responsable d'UE et par la scolarité\n\nPensez à vous connecter au site pour continuer le processus.")
+            msg = MIMEText("Ici le site StagesL3,\n\nVotre fiche logistique a été validée par un responsable d'UE et par la scolarité.\n\nPensez à vous connecter au site pour continuer le processus.")
             msg["Subject"] = "StagesL3: fiche logistique validée"
         else:
             mtype = False   # don't send
@@ -68,8 +68,8 @@ def emailStudent(student, mtype):
 
     if mtype:
     # generate the header
-        msg["From"] = "noreply@stagesl3.ipcms.fr"
+        msg["From"] = app.config['MINISTAGES_EMAIL']
         msg["To"] = student.Email
-        msg["Reply-To"] = "PLEASE_DO_NOT_REPLY_TO_THIS_ADDRESS@stagesl3.ipcms.fr"
+        msg["Reply-To"] = app.config['MINISTAGES_EMAIL']
         # send the email
         subprocess.run([sendmail_location, "-t", "-oi"], input=msg.as_bytes())

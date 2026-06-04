@@ -30,14 +30,17 @@ class User(UserMixin, db.Model):
     LastName = db.Column(db.String(64), nullable=False)
     Email = db.Column(db.String(128))
     LastOp = db.Column(db.DateTime)
+    # only valid for a student
     stage_id = db.Column(db.Integer, db.ForeignKey('stages.id'))
 #    stage = db.relationship('Stage', foreign_keys=stage_id)
     PDFfiche = db.Column(db.String(128))
     ValidAdmin = db.Column(db.Boolean)
     ValidScol = db.Column(db.Boolean)
+    # non-empty only for supervisors
     subjects = db.relationship('Stage', backref='supervisor', foreign_keys=[Stage.supervisor_id], lazy=True)
-    EvalDone = db.Column(db.Integer)
-    EvalText = db.Column(db.String(2048))
+    # only valid for students
+    evaluation_id = db.Column(db.Integer, db.ForeignKey('evaluations.id'))
+#    evaluation = db.relationship('Evaluation', foreign_keys=evaluations_id)
     
     def __repr__(self):
         return "<User {}={} {}>".format(self.username, self.FirstName, self.LastName)
@@ -47,6 +50,28 @@ class User(UserMixin, db.Model):
 
     def get_id(self):
         return self.username
+
+class Evaluation(db.Model):
+    __tablename__ = "evaluations"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    EvalDate = db.Column(db.DateTime)
+    Absence = db.Column(db.Boolean)
+    AbsenceText = db.Column(db.String(512))
+    StBiblio = db.Column(db.String(1024))
+    StInfo = db.Column(db.String(1024))
+    StExp = db.Column(db.String(1024))
+    StTh = db.Column(db.String(1024))
+    Work = db.Column(db.Integer)
+    Know = db.Column(db.Integer)
+    Indi = db.Column(db.Integer)
+    Init = db.Column(db.Integer)
+    Rigr = db.Column(db.Integer)
+    RepRead = db.Column(db.Boolean)
+    RepReadN = db.Column(db.Integer)
+    Comments = db.Column(db.String(1024))
+    student = db.relationship('User', backref='evaluation', foreign_keys='User.evaluation_id', lazy=True)
 
 class GlobalData(db.Model):
 

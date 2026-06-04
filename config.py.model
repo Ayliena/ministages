@@ -14,6 +14,9 @@ SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostnam
 SQLALCHEMY_POOL_RECYCLE = 299
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+# email address we are sending from
+MINISTAGES_EMAIL = "noreply@ipcms.unistra.fr"
+
 # Application threads. A common general assumption is
 # using 2 per available processor cores - to handle
 # incoming requests using one and performing background

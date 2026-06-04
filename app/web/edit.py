@@ -1,6 +1,6 @@
 from app import app, db, devel_site
 from app.staticdata import ACC_STUDENT, ACC_SUPERV, ACC_SCOL, ACC_ADMIN
-from app.models import User, Stage, GlobalData
+from app.models import User, Stage, GlobalData, Evaluation
 from app.helpers import checkuser, emailStudent
 from flask import render_template, redirect, request, url_for, session, Response
 from flask_login import login_required, current_user
@@ -36,6 +36,11 @@ def editpage():
     if cmd == "StageManage" and (current_user.usertype == ACC_ADMIN or current_user.usertype == ACC_SCOL):
         # switch the view to stage manage mode
         session["otherMode"] = "stagemanage"
+        return redirect(url_for('mainpage'))
+
+    if cmd == "EvalTable" and current_user.usertype == ACC_ADMIN:
+        # switch the view to stage manage mode
+        session["otherMode"] = "evaltable"
         return redirect(url_for('mainpage'))
 
     if cmd == "MainPage":
@@ -370,8 +375,25 @@ def editpage():
         if not student or student.usertype != ACC_STUDENT:
             return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid student id")
 
+        # get the evaluation, if we had one, otherwise generate it
+        evaluation = Evaluation.query.filter_by(id=student.evaluation_id).first()
+        if not evaluation:
+            evaluation = Evaluation(AbsenceText="", StBiblio="", StInfo="", StExp="", StTh="", Comments="", RepReadN=0)
+
         # generate the page
-        return render_template("evaluate_page.html", devsite=devel_site, user=current_user, st=student, gdata=gendata)
+        return render_template("evaluate_page.html", devsite=devel_site, user=current_user, st=student, ev=evaluation, gdata=gendata)
+    
+    if cmd.startswith('EvalView-') and current_user.usertype == ACC_ADMIN:
+        # get the student
+        stid = int(cmd[9:])
+        student = User.query.filter_by(id=stid).first()
+        if not student or student.usertype != ACC_STUDENT:
+            return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid student id")
+
+        evaluation = Evaluation.query.filter_by(id=student.evaluation_id).first()
+        if not evaluation:
+            return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="evaluation unavailable")
+        return render_template("evaluate_page.html", devsite=devel_site, user=current_user, st=student, ev=evaluation, readonly=True, gdata=gendata)
 
     if cmd.startswith('EvalSave') and current_user.usertype == ACC_SUPERV:
         # save the evaluation data
@@ -381,13 +403,38 @@ def editpage():
         if not student or student.usertype != ACC_STUDENT:
             return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid student id")
 
-        student.EvalDone = 1;
-        student.EvalText = request.form["c_comments"]
-        db.session.commit()
+        # overwrite?
+        evaluation = Evaluation.query.filter_by(id=student.evaluation_id).first()
+        if not evaluation:
+            evaluation = Evaluation()
 
+        # fill in the data
+        evaluation.EvalDate = datetime.now()
+        evaluation.Absence = int(request.form["absgroup"]) if "absgroup" in request.form else False
+        evaluation.AbsenceText = request.form["c_absence"]
+        evaluation.StBiblio = request.form["c_biblio"]
+        evaluation.StInfo = request.form["c_info"]
+        evaluation.StExp = request.form["c_exp"]
+        evaluation.StTh = request.form["c_th"]
+        evaluation.Work = int(request.form["workgroup"]) if "workgroup" in request.form else 0
+        evaluation.Know = int(request.form["knowgroup"]) if "knowgroup" in request.form else 0
+        evaluation.Indi = int(request.form["indigroup"]) if "indigroup" in request.form else 0
+        evaluation.Init = int(request.form["initgroup"]) if "initgroup" in request.form else 0
+        evaluation.Rigr = int(request.form["rigrgroup"]) if "rigrgroup" in request.form else 0
+
+        evaluation.RepRead = int(request.form["readgroup"]) if "readgroup" in request.form else False
+        try:
+            evaluation.RepReadN = int(request.form["c_repreadn"])
+        except ValueError:
+            evaluation.RepReadN = 0
+        evaluation.Comments = request.form["c_comments"]
+        db.session.add(evaluation)
+        db.session.commit()
+        student.evaluation_id = evaluation.id
+        db.session.commit()
         return redirect(url_for('mainpage'))
         
-    if cmd.startswith('EvalCancel') and current_user.usertype == ACC_SUPERV:
+    if cmd.startswith('EvalCancel') and (current_user.usertype == ACC_SUPERV or current_user.usertype == ACC_ADMIN):
         return redirect(url_for('mainpage'))
     
     if cmd == "StudFiche" and current_user.usertype == ACC_STUDENT:

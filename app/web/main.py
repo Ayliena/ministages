@@ -62,6 +62,11 @@ def mainpage():
             users = User.query.all()
             return render_template("user_page.html", devsite=devel_site, user=current_user, userlist=users, gdata=gendata, msg=messages)
 
+        if mode == "evaltable":
+            # generate the table with all the evaluations
+            stages = Stage.query.all()
+            return render_template("evaluate_page.html", devsite=devel_site, user=current_user, stagedit=stages, gdata=gendata, msg=messages)
+        
         return render_template("admin_page.html", devsite=devel_site, user=current_user, gdata=gendata, msg=messages)
 
     return render_template("error_page.html", devsite=devel_site, user=current_user, errormessage="invalid user type")

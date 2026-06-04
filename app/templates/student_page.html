@@ -54,7 +54,7 @@
             <div class="col-sm-12">
                 {% if user.PDFfiche %}
                     {% if user.ValidScol and user.ValidAdmin %}<p>La fiche logistique a été validée par la scolarité et le responsable des projets tutorés, vous pouvez désormais
-                    utiliser l'application Pstage disponible dans ERNEST pour générer la convention de stage qu'il faudra transmettre à la scolarité.</p>
+                    utiliser l'application <b>Esup-stage</b> disponible dans ERNEST pour générer la convention de stage qu'il faudra transmettre à la scolarité.</p>
                     {% else %}<p>Fiche logistique déposée (<a href="/static/{{ user.PDFfiche }}" target="_blank">{{ user.PDFfiche }}</a>): vous devez maintenant attendre que celle-ci soit validée par la scolarité et le responsable des
                     projets tutorés.{% endif %}
                 {% else %}
